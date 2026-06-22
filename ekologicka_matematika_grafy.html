@@ -1,0 +1,796 @@
+
+<h2 class="sr-only">Interaktivní přehled ekologické matematiky – grafy ke všem klíčovým rovnicím</h2>
+
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; }
+.section {
+  border-top: 0.5px solid var(--color-border-tertiary);
+  padding: 1.5rem 0 0.5rem;
+}
+.section:first-of-type { border-top: none; padding-top: 0.5rem; }
+.section-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin: 0 0 4px;
+}
+.section-eq {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--color-text-secondary);
+  margin: 0 0 12px;
+  background: var(--color-background-secondary);
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: var(--border-radius-md);
+}
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+.ctrl-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+.ctrl-group input[type=range] { width: 100px; }
+.ctrl-group span.val {
+  min-width: 30px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-primary);
+}
+canvas { width: 100% !important; display: block; }
+.chart-wrap { position: relative; width: 100%; }
+.legend {
+  display: flex; flex-wrap: wrap; gap: 8px 16px;
+  margin-top: 6px; font-size: 11px; color: var(--color-text-secondary);
+}
+.leg-item { display: flex; align-items: center; gap: 4px; }
+.leg-dot { width: 10px; height: 3px; border-radius: 2px; }
+.note {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+
+<script>
+const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+const GRID = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)';
+const TICK = isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)';
+const baseOpts = (xLabel, yLabel) => ({
+  responsive: true, maintainAspectRatio: false,
+  animation: false,
+  plugins: { legend: { display: false }, tooltip: {
+    backgroundColor: isDark ? '#2c2c2a' : '#fff',
+    borderColor: isDark ? '#444' : '#ccc', borderWidth: 1,
+    titleColor: isDark ? '#e0e0d8' : '#333',
+    bodyColor: isDark ? '#b0b0a8' : '#555',
+    callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(3)}` }
+  }},
+  scales: {
+    x: { grid: { color: GRID }, ticks: { color: TICK, font: { size: 10 } },
+         title: { display: true, text: xLabel, color: TICK, font: { size: 11 } } },
+    y: { grid: { color: GRID }, ticks: { color: TICK, font: { size: 10 } },
+         title: { display: true, text: yLabel, color: TICK, font: { size: 11 } } }
+  }
+});
+
+function range(a, b, n) {
+  const arr = []; const step = (b - a) / (n - 1);
+  for (let i = 0; i < n; i++) arr.push(+(a + i * step).toFixed(6));
+  return arr;
+}
+
+Chart.defaults.font.family = 'var(--font-sans)';
+</script>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 1. LOGISTICKÁ ROVNICE (hustotně závislá formulace) -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">1. Logistická rovnice – dynamika populace</div>
+  <div class="section-eq">dN/dt = rN(1 – N/K) &nbsp;|&nbsp; per-capita: (1/N)dN/dt = r – aN</div>
+
+  <div class="controls">
+    <div class="ctrl-group">r (intrinsic rate):
+      <input type="range" id="lr" min="0.1" max="3" step="0.05" value="1">
+      <span class="val" id="lrv">1.0</span>
+    </div>
+    <div class="ctrl-group">K (carrying capacity):
+      <input type="range" id="lk" min="50" max="500" step="10" value="200">
+      <span class="val" id="lkv">200</span>
+    </div>
+    <div class="ctrl-group">N₀ (počáteční):
+      <input type="range" id="ln0" min="1" max="50" step="1" value="5">
+      <span class="val" id="ln0v">5</span>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">N(t) – S-křivka</div>
+      <div class="chart-wrap" style="height:180px"><canvas id="logN" role="img" aria-label="Logistický růst N v čase"></canvas></div>
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Per-capita růst vs. N (hustotní závislost)</div>
+      <div class="chart-wrap" style="height:180px"><canvas id="logPC" role="img" aria-label="Per-capita growth rate vs N"></canvas></div>
+    </div>
+  </div>
+  <div class="note">Levý graf: S-křivka (logistická funkce). Pravý graf: hustotně závislá formulace – lineární pokles per-capita růstu s N. Průsečík s osou x = K (rovnováha). Přidaná mortalita q: posune průsečík doleva → nižší K (vyřeší Ginzburgův paradox).</div>
+</div>
+
+<script>
+let logNChart, logPCChart;
+function buildLogistic() {
+  const r = +document.getElementById('lr').value;
+  const K = +document.getElementById('lk').value;
+  const N0 = +document.getElementById('ln0').value;
+  document.getElementById('lrv').textContent = r.toFixed(2);
+  document.getElementById('lkv').textContent = K;
+  document.getElementById('ln0v').textContent = N0;
+
+  const T = 80, dt = 0.1, steps = T / dt;
+  const ts = [], Ns = [];
+  let N = N0;
+  for (let i = 0; i <= steps; i++) {
+    ts.push(+(i * dt).toFixed(1));
+    Ns.push(+N.toFixed(4));
+    N += r * N * (1 - N / K) * dt;
+  }
+
+  const Nrange = range(0, K * 1.3, 120);
+  const pcData = Nrange.map(n => ({ x: +n.toFixed(2), y: +(r - r / K * n).toFixed(4) }));
+
+  const C1 = {
+    type: 'line',
+    data: { labels: ts, datasets: [{
+      label: 'N(t)', data: Ns, borderColor: '#378ADD', borderWidth: 2, pointRadius: 0, tension: 0.3,
+      fill: false
+    }, {
+      label: 'K', data: ts.map(() => K), borderColor: isDark ? '#FA8' : '#E07B30',
+      borderWidth: 1, borderDash: [6,4], pointRadius: 0
+    }]},
+    options: { ...baseOpts('čas t', 'N (jedinci)'), plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${Math.round(ctx.parsed.y)}` } } } }
+  };
+
+  const C2 = {
+    type: 'line',
+    data: { datasets: [{
+      label: 'per-capita (1/N)dN/dt', data: pcData, borderColor: '#1D9E75', borderWidth: 2, pointRadius: 0
+    }, {
+      label: '0', data: Nrange.map(n => ({ x: n, y: 0 })), borderColor: GRID, borderWidth: 1, pointRadius: 0
+    }]},
+    options: { ...baseOpts('N', 'per-capita rate'), parsing: false, plugins: { legend: { display: false } } }
+  };
+
+  if (logNChart) logNChart.destroy();
+  if (logPCChart) logPCChart.destroy();
+  logNChart = new Chart(document.getElementById('logN'), C1);
+  logPCChart = new Chart(document.getElementById('logPC'), C2);
+}
+['lr','lk','ln0'].forEach(id => document.getElementById(id).addEventListener('input', buildLogistic));
+buildLogistic();
+</script>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 2. REPRODUKČNÍ HODNOTA & R0 / r -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">2. Shannon index šířky niky &amp; Levinsův index</div>
+  <div class="section-eq">log B = –Σpᵢ log pᵢ &nbsp;|&nbsp; 1/B = Σpᵢ²</div>
+
+  <div class="note" style="margin-bottom:10px;">Posuvníkem nastavte podíly využití habitats (celkový součet bude normalizován). Specialista: vše do 1-2 habitatů. Generalista: rovnoměrné rozložení.</div>
+  <div class="controls" style="flex-direction:column;align-items:flex-start;gap:6px;">
+    <div id="niche-sliders" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:100%;">
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;">
+    <div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Využití habitatů (pᵢ)</div>
+      <div class="chart-wrap" style="height:160px"><canvas id="nicheBar" role="img" aria-label="Histogram využití habitatů"></canvas></div>
+    </div>
+    <div style="display:flex;flex-direction:column;justify-content:center;gap:10px;padding:16px;">
+      <div>
+        <div style="font-size:11px;color:var(--color-text-secondary)">Shannon B (log B = –Σpᵢ log pᵢ)</div>
+        <div style="font-size:22px;font-weight:500;color:var(--color-text-primary)" id="nicheH">–</div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--color-text-secondary)">Levinsův B (1/Σpᵢ²)</div>
+        <div style="font-size:22px;font-weight:500;color:var(--color-text-primary)" id="nicheL">–</div>
+      </div>
+      <div style="font-size:11px;color:var(--color-text-secondary)" id="nicheType">–</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const NHABITATS = 8;
+let nicheBarChart;
+const nicheVals = Array(NHABITATS).fill(3);
+
+function buildNicheSliders() {
+  const cont = document.getElementById('niche-sliders');
+  cont.innerHTML = '';
+  for (let i = 0; i < NHABITATS; i++) {
+    const d = document.createElement('div');
+    d.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--color-text-secondary)';
+    d.innerHTML = `H${i+1}<input type="range" min="0" max="10" step="1" value="${nicheVals[i]}" style="width:100%;writing-mode:auto" id="nh${i}"><span id="nhv${i}">${nicheVals[i]}</span>`;
+    cont.appendChild(d);
+    d.querySelector('input').addEventListener('input', e => {
+      nicheVals[i] = +e.target.value;
+      document.getElementById(`nhv${i}`).textContent = e.target.value;
+      updateNiche();
+    });
+  }
+}
+
+function updateNiche() {
+  const total = nicheVals.reduce((a,b) => a+b, 0) || 1;
+  const p = nicheVals.map(v => v / total);
+  let H = 0, sumP2 = 0;
+  p.forEach(pi => { if (pi > 0) { H -= pi * Math.log(pi); sumP2 += pi * pi; } });
+  const B_shannon = Math.exp(H);
+  const B_levins = 1 / sumP2;
+  document.getElementById('nicheH').textContent = B_shannon.toFixed(2);
+  document.getElementById('nicheL').textContent = B_levins.toFixed(2);
+  const maxB = NHABITATS;
+  const relB = B_levins / maxB;
+  document.getElementById('nicheType').textContent = relB > 0.6 ? '→ Generalista (široká nika)' : relB < 0.25 ? '→ Specialista (úzká nika)' : '→ Střední šířka niky';
+
+  const data = { labels: p.map((_,i) => `H${i+1}`), datasets: [{
+    label: 'pᵢ', data: p.map(v => +v.toFixed(3)), backgroundColor: '#378ADD88', borderColor: '#378ADD', borderWidth: 1
+  }]};
+  if (nicheBarChart) nicheBarChart.destroy();
+  nicheBarChart = new Chart(document.getElementById('nicheBar'), {
+    type: 'bar', data,
+    options: { ...baseOpts('Habitat', 'pᵢ'), scales: { y: { ...baseOpts('','').scales.y, min: 0, max: 1 } } }
+  });
+}
+buildNicheSliders();
+updateNiche();
+</script>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 3. METAPOPULACE – Levinsova rovnice -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">3. Metapopulační dynamika – Levinsova rovnice</div>
+  <div class="section-eq">dP/dt = i·P·(k–P) – e·P</div>
+
+  <div class="controls">
+    <div class="ctrl-group">i (kolonizace):
+      <input type="range" id="mi" min="0.01" max="0.5" step="0.01" value="0.15">
+      <span class="val" id="miv">0.15</span>
+    </div>
+    <div class="ctrl-group">e (extinkce):
+      <input type="range" id="me" min="0.01" max="0.5" step="0.01" value="0.05">
+      <span class="val" id="mev">0.05</span>
+    </div>
+    <div class="ctrl-group">k (plošky celkem):
+      <input type="range" id="mk" min="10" max="100" step="5" value="50">
+      <span class="val" id="mkv">50</span>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">P(t) – dynamika obsazenosti</div>
+      <div class="chart-wrap" style="height:170px"><canvas id="metaT" role="img" aria-label="Metapopulační dynamika v čase"></canvas></div>
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Kolonizace vs. extinkce (rovnováha = průsečík)</div>
+      <div class="chart-wrap" style="height:170px"><canvas id="metaEq" role="img" aria-label="Kolonizační a extinkční křivky"></canvas></div>
+    </div>
+  </div>
+  <div class="note" id="metaNote"></div>
+</div>
+
+<script>
+let metaTChart, metaEqChart;
+function buildMeta() {
+  const i = +document.getElementById('mi').value;
+  const e = +document.getElementById('me').value;
+  const k = +document.getElementById('mk').value;
+  document.getElementById('miv').textContent = i.toFixed(2);
+  document.getElementById('mev').textContent = e.toFixed(2);
+  document.getElementById('mkv').textContent = k;
+
+  const Peq = k * (1 - e / i);
+  const feasible = Peq > 0 && i > e;
+
+  const T = 200, dt = 0.2;
+  const ts = [], Ps = [];
+  let P = k * 0.1;
+  for (let t = 0; t <= T; t += dt) {
+    ts.push(+t.toFixed(1));
+    Ps.push(+P.toFixed(3));
+    const dP = i * P * (k - P) - e * P;
+    P = Math.max(0, Math.min(k, P + dP * dt));
+  }
+
+  const Pranges = range(0, k, 100);
+  const colData = Pranges.map(p => ({ x: +p.toFixed(2), y: +(i * p * (k - p)).toFixed(3) }));
+  const extData = Pranges.map(p => ({ x: +p.toFixed(2), y: +(e * p).toFixed(3) }));
+
+  if (metaTChart) metaTChart.destroy();
+  if (metaEqChart) metaEqChart.destroy();
+
+  metaTChart = new Chart(document.getElementById('metaT'), {
+    type: 'line',
+    data: { labels: ts, datasets: [
+      { label: 'P (obsazené plošky)', data: Ps, borderColor: '#1D9E75', borderWidth: 2, pointRadius: 0, fill: false },
+      { label: 'Rovnováha P*', data: ts.map(() => feasible ? Peq : 0), borderColor: '#E07B30', borderWidth: 1, borderDash: [6,4], pointRadius: 0 }
+    ]},
+    options: { ...baseOpts('čas t', 'P'), plugins: { legend: { display: false } } }
+  });
+
+  metaEqChart = new Chart(document.getElementById('metaEq'), {
+    type: 'line',
+    data: { datasets: [
+      { label: 'kolonizace i·P·(k–P)', data: colData, borderColor: '#1D9E75', borderWidth: 2, pointRadius: 0, fill: false },
+      { label: 'extinkce e·P', data: extData, borderColor: '#D85A30', borderWidth: 2, pointRadius: 0, fill: false }
+    ]},
+    options: { ...baseOpts('P', 'rychlost'), parsing: false, plugins: { legend: { display: false } } }
+  });
+
+  document.getElementById('metaNote').textContent = feasible
+    ? `Rovnováha P* = ${Peq.toFixed(1)} plošek (${(Peq/k*100).toFixed(0)}% k). Kolonizace > extinkce → metapopulace přežívá. Pozor: neobsazené plošky jsou kritické – zničení prázdných plošek snižuje k a posouvá rovnováhu k vymření.`
+    : `e ≥ i → rovnováha P* ≤ 0 → metapopulace vymírá. Snižte extinkci nebo zvyšte kolonizaci.`;
+}
+['mi','me','mk'].forEach(id => document.getElementById(id).addEventListener('input', buildMeta));
+buildMeta();
+</script>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 4. SPECIES-AREA RELATIONSHIP -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">4. Species-Area Relationship (SAR)</div>
+  <div class="section-eq">S = C · Aᶻ &nbsp;(log S = z·log A + log C)</div>
+
+  <div class="controls">
+    <div class="ctrl-group">z (sklon):
+      <input type="range" id="sz" min="0.05" max="0.99" step="0.01" value="0.3">
+      <span class="val" id="szv">0.30</span>
+    </div>
+    <div class="ctrl-group">C (intercept):
+      <input type="range" id="sc" min="1" max="50" step="1" value="10">
+      <span class="val" id="scv">10</span>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">S vs. A (aritmetická škála)</div>
+      <div class="chart-wrap" style="height:170px"><canvas id="sarLin" role="img" aria-label="SAR lineární škála"></canvas></div>
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">log S vs. log A (log-log škála → přímka)</div>
+      <div class="chart-wrap" style="height:170px"><canvas id="sarLog" role="img" aria-label="SAR log-log škála"></canvas></div>
+    </div>
+  </div>
+  <div class="note">Typické hodnoty z: 0.1–0.2 uvnitř kontinentu, 0.25–0.5 ostrovy, ~1 mezikontinentální srovnání. Přímka v log-log grafu = power law. Intercept C = průměrný počet druhů na jednotku plochy.</div>
+  <div style="display:flex;gap:16px;margin-top:8px;font-size:11px;color:var(--color-text-secondary)">
+    <div style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:20px;height:2px;background:#378ADD"></span>vaše z = <span id="sarZlab">0.30</span></div>
+    <div style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:20px;height:2px;background:#1D9E75;opacity:0.6;border-top:2px dashed #1D9E75"></span>z = 0.15 (kontinent)</div>
+    <div style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:20px;height:2px;background:#D85A30;opacity:0.6;border-top:2px dashed #D85A30"></span>z = 0.5 (ostrovy)</div>
+  </div>
+</div>
+
+<script>
+let sarLinChart, sarLogChart;
+function buildSAR() {
+  const z = +document.getElementById('sz').value;
+  const C = +document.getElementById('sc').value;
+  document.getElementById('szv').textContent = z.toFixed(2);
+  document.getElementById('scv').textContent = C;
+  document.getElementById('sarZlab').textContent = z.toFixed(2);
+
+  const As = range(1, 10000, 80);
+  const Ss = As.map(a => +(C * Math.pow(a, z)).toFixed(2));
+  const Ss15 = As.map(a => +(C * Math.pow(a, 0.15)).toFixed(2));
+  const Ss50 = As.map(a => +(C * Math.pow(a, 0.5)).toFixed(2));
+
+  const logAs = As.map(a => +(Math.log10(a)).toFixed(3));
+  const logSs = Ss.map(s => +(Math.log10(s)).toFixed(3));
+  const logSs15 = Ss15.map(s => +(Math.log10(s)).toFixed(3));
+  const logSs50 = Ss50.map(s => +(Math.log10(s)).toFixed(3));
+
+  if (sarLinChart) sarLinChart.destroy();
+  if (sarLogChart) sarLogChart.destroy();
+
+  sarLinChart = new Chart(document.getElementById('sarLin'), {
+    type: 'line',
+    data: { labels: As.map(a => a > 999 ? (a/1000).toFixed(0)+'k' : a), datasets: [
+      { label: 'vaše z', data: Ss, borderColor: '#378ADD', borderWidth: 2, pointRadius: 0 },
+      { label: 'z=0.15', data: Ss15, borderColor: '#1D9E75', borderWidth: 1.5, borderDash:[5,5], pointRadius: 0 },
+      { label: 'z=0.50', data: Ss50, borderColor: '#D85A30', borderWidth: 1.5, borderDash:[5,5], pointRadius: 0 }
+    ]},
+    options: { ...baseOpts('A (plocha)', 'S (druhy)'), plugins: { legend: { display: false } } }
+  });
+
+  const logDat = logAs.map((x,i) => ({ x, y: logSs[i] }));
+  const logDat15 = logAs.map((x,i) => ({ x, y: logSs15[i] }));
+  const logDat50 = logAs.map((x,i) => ({ x, y: logSs50[i] }));
+
+  sarLogChart = new Chart(document.getElementById('sarLog'), {
+    type: 'line',
+    data: { datasets: [
+      { label: 'vaše z', data: logDat, borderColor: '#378ADD', borderWidth: 2, pointRadius: 0 },
+      { label: 'z=0.15', data: logDat15, borderColor: '#1D9E75', borderWidth: 1.5, borderDash:[5,5], pointRadius: 0 },
+      { label: 'z=0.50', data: logDat50, borderColor: '#D85A30', borderWidth: 1.5, borderDash:[5,5], pointRadius: 0 }
+    ]},
+    options: { ...baseOpts('log A', 'log S'), parsing: false, plugins: { legend: { display: false } } }
+  });
+}
+['sz','sc'].forEach(id => document.getElementById(id).addEventListener('input', buildSAR));
+buildSAR();
+</script>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 5. LOTKA-VOLTERRA PREDÁTOR-KOŘIST -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">5. Lotka-Volterra – predátor-kořist</div>
+  <div class="section-eq">dR/dt = rR – aNR &nbsp;|&nbsp; dN/dt = faRN – qN</div>
+
+  <div class="controls">
+    <div class="ctrl-group">r (růst kořisti):
+      <input type="range" id="lvr" min="0.1" max="2" step="0.05" value="0.8">
+      <span class="val" id="lvrv">0.8</span>
+    </div>
+    <div class="ctrl-group">a (efektivita):
+      <input type="range" id="lva" min="0.01" max="0.2" step="0.005" value="0.05">
+      <span class="val" id="lvav">0.050</span>
+    </div>
+    <div class="ctrl-group">f (konverze):
+      <input type="range" id="lvf" min="0.05" max="0.5" step="0.01" value="0.2">
+      <span class="val" id="lvfv">0.20</span>
+    </div>
+    <div class="ctrl-group">q (mort. pred.):
+      <input type="range" id="lvq" min="0.05" max="1" step="0.05" value="0.3">
+      <span class="val" id="lvqv">0.30</span>
+    </div>
+    <div class="ctrl-group">K kořisti:
+      <input type="range" id="lvK" min="0" max="500" step="10" value="0" title="0 = žádná K (základní model)">
+      <span class="val" id="lvKv">off</span>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">R(t) a N(t) – dynamika v čase</div>
+      <div class="chart-wrap" style="height:180px"><canvas id="lvTime" role="img" aria-label="Lotka-Volterra dinamika v čase"></canvas></div>
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Fázový prostor R–N (trajektorie)</div>
+      <div class="chart-wrap" style="height:180px"><canvas id="lvPhase" role="img" aria-label="Fázový prostor Lotka-Volterra"></canvas></div>
+    </div>
+  </div>
+  <div class="legend">
+    <div class="leg-item"><span class="leg-dot" style="background:#378ADD;height:2px"></span> kořist R</div>
+    <div class="leg-item"><span class="leg-dot" style="background:#D85A30;height:2px"></span> predátor N</div>
+    <div class="leg-item"><span class="leg-dot" style="background:#888;height:1px;border-top:1px dashed #888;width:16px"></span> rovnováha (izokliny)</div>
+  </div>
+  <div class="note" id="lvNote"></div>
+</div>
+
+<script>
+let lvTimeChart, lvPhaseChart;
+function buildLV() {
+  const r = +document.getElementById('lvr').value;
+  const a = +document.getElementById('lva').value;
+  const f = +document.getElementById('lvf').value;
+  const q = +document.getElementById('lvq').value;
+  const Kraw = +document.getElementById('lvK').value;
+  const useK = Kraw > 0;
+  const K = useK ? Kraw : Infinity;
+  document.getElementById('lvrv').textContent = r.toFixed(2);
+  document.getElementById('lvav').textContent = a.toFixed(3);
+  document.getElementById('lvfv').textContent = f.toFixed(2);
+  document.getElementById('lvqv').textContent = q.toFixed(2);
+  document.getElementById('lvKv').textContent = useK ? Kraw : 'off';
+
+  const Req = q / (f * a);
+  const Neq = r / a;
+
+  const T = 150, dt = 0.05;
+  const ts = [], Rs = [], Ns = [], phase = [];
+  let R = Req * 1.5, N = Neq * 0.7;
+  for (let t = 0; t <= T; t += dt) {
+    ts.push(+t.toFixed(2));
+    Rs.push(+R.toFixed(3));
+    Ns.push(+N.toFixed(3));
+    phase.push({ x: +R.toFixed(3), y: +N.toFixed(3) });
+    const dR = useK ? r * R * (1 - R / K) - a * N * R : r * R - a * N * R;
+    const dN = f * a * R * N - q * N;
+    R = Math.max(0.01, R + dR * dt);
+    N = Math.max(0.01, N + dN * dt);
+  }
+
+  if (lvTimeChart) lvTimeChart.destroy();
+  if (lvPhaseChart) lvPhaseChart.destroy();
+
+  lvTimeChart = new Chart(document.getElementById('lvTime'), {
+    type: 'line',
+    data: { labels: ts, datasets: [
+      { label: 'kořist R', data: Rs, borderColor: '#378ADD', borderWidth: 1.5, pointRadius: 0 },
+      { label: 'predátor N', data: Ns, borderColor: '#D85A30', borderWidth: 1.5, pointRadius: 0 }
+    ]},
+    options: { ...baseOpts('čas t', 'počet jedinců'), plugins: { legend: { display: false } } }
+  });
+
+  lvPhaseChart = new Chart(document.getElementById('lvPhase'), {
+    type: 'line',
+    data: { datasets: [
+      { label: 'trajektorie', data: phase, borderColor: '#1D9E7599', borderWidth: 1.5, pointRadius: 0 },
+      { label: 'R* = q/(fa)', data: [{ x: Req, y: 0 }, { x: Req, y: Neq * 3 }], borderColor: '#378ADD55', borderWidth: 1, borderDash: [5,4], pointRadius: 0 },
+      { label: 'N* = r/a', data: [{ x: 0, y: Neq }, { x: Req * 4, y: Neq }], borderColor: '#D85A3055', borderWidth: 1, borderDash: [5,4], pointRadius: 0 }
+    ]},
+    options: { ...baseOpts('kořist R', 'predátor N'), parsing: false, plugins: { legend: { display: false } } }
+  });
+
+  document.getElementById('lvNote').textContent = `Rovnováha: R* = ${Req.toFixed(1)}, N* = ${Neq.toFixed(1)}. Izokliny: kořist neroste při N = r/a = ${Neq.toFixed(1)} (horizontální přímka); predátor neroste při R = q/(fa) = ${Req.toFixed(1)} (vertikální přímka). ${useK ? 'K kořisti zapnuto → tlumené oscilace, spirála ke stabilní rovnováze.' : 'Bez K kořisti → neutrální cykly (základní Lotka-Volterra). Zapněte K pro tlumené oscilace (Volterrův model).'}`;
+}
+['lvr','lva','lvf','lvq','lvK'].forEach(id => document.getElementById(id).addEventListener('input', buildLV));
+buildLV();
+</script>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 6. MAYOVA ROVNICE – chaos -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">6. Mayova rovnice – diskrétní populace a deterministic chaos</div>
+  <div class="section-eq">N_{t+1} = R·Nₜ·(1 – Nₜ)</div>
+
+  <div class="controls">
+    <div class="ctrl-group">R (growth rate):
+      <input type="range" id="mr" min="0.5" max="4" step="0.01" value="2.5">
+      <span class="val" id="mrv">2.50</span>
+    </div>
+    <div class="ctrl-group">N₀:
+      <input type="range" id="mn0" min="0.01" max="0.99" step="0.01" value="0.1">
+      <span class="val" id="mn0v">0.10</span>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Nₜ v čase</div>
+      <div class="chart-wrap" style="height:170px"><canvas id="mayT" role="img" aria-label="Mayova rovnice v čase"></canvas></div>
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Bifurkační diagram (dlouhodobé chování vs. R)</div>
+      <div class="chart-wrap" style="height:170px"><canvas id="mayBif" role="img" aria-label="Bifurkacni diagram"></canvas></div>
+    </div>
+  </div>
+  <div class="note" id="mayNote"></div>
+</div>
+
+<script>
+let mayTChart, mayBifChart;
+function buildMay() {
+  const R = +document.getElementById('mr').value;
+  const N0 = +document.getElementById('mn0').value;
+  document.getElementById('mrv').textContent = R.toFixed(2);
+  document.getElementById('mn0v').textContent = N0.toFixed(2);
+
+  const steps = 120;
+  const Ns = [N0];
+  for (let t = 0; t < steps; t++) {
+    const last = Ns[Ns.length - 1];
+    Ns.push(Math.max(0, Math.min(1, R * last * (1 - last))));
+  }
+
+  const regime = R < 1 ? 'vymírání (N→0)' : R < 3 ? 'stabilní rovnováha' : R < 3.449 ? 'tlumené oscilace' : R < 3.57 ? 'stabilní cykly' : 'deterministický CHAOS';
+
+  if (mayTChart) mayTChart.destroy();
+  mayTChart = new Chart(document.getElementById('mayT'), {
+    type: 'line',
+    data: { labels: Array.from({length: steps+1}, (_,i) => i), datasets: [{
+      label: 'N', data: Ns.map(v => +v.toFixed(4)),
+      borderColor: '#7F77DD', borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: '#7F77DD'
+    }]},
+    options: { ...baseOpts('generace t', 'Nₜ'), scales: { y: { ...baseOpts('','').scales.y, min: 0, max: 1 } }, plugins: { legend: { display: false } } }
+  });
+
+  const Rvals = [], bifPts = [];
+  for (let Rb = 0.5; Rb <= 4; Rb += 0.01) {
+    let n = 0.5;
+    for (let t = 0; t < 300; t++) n = Rb * n * (1 - n);
+    const pts = new Set();
+    for (let t = 0; t < 100; t++) {
+      n = Rb * n * (1 - n);
+      pts.add(Math.round(n * 1000) / 1000);
+    }
+    pts.forEach(v => bifPts.push({ x: +Rb.toFixed(2), y: v }));
+  }
+
+  if (mayBifChart) mayBifChart.destroy();
+  mayBifChart = new Chart(document.getElementById('mayBif'), {
+    type: 'scatter',
+    data: { datasets: [{
+      label: 'N∞', data: bifPts,
+      pointRadius: 0.6, pointBackgroundColor: '#7F77DD88', borderWidth: 0
+    }, {
+      label: 'aktuální R', data: [{ x: R, y: 0 }, { x: R, y: 1 }],
+      type: 'line', borderColor: '#D85A30', borderWidth: 1.5, borderDash: [4,3], pointRadius: 0
+    }]},
+    options: { ...baseOpts('R', 'N (dlouhodobé)'), parsing: false,
+      scales: { x: { ...baseOpts('','').scales.x, min: 0.5, max: 4 }, y: { ...baseOpts('','').scales.y, min: 0, max: 1 } },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  document.getElementById('mayNote').textContent = `R = ${R.toFixed(2)} → ${regime}. Červená svislá čára v bifurkačním diagramu = vaše R. Přetahujte posuvník přes R = 3 (první bifurkace), 3.449 (druhá), 3.57 (hranice chaosu). Deterministický chaos: stejná rovnice, jiné N₀ → zcela odlišné trajektorie.`;
+}
+['mr','mn0'].forEach(id => document.getElementById(id).addEventListener('input', buildMay));
+buildMay();
+</script>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 7. BODY SIZE – škálování s metabolismem -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">7. Metabolismus a tělesná velikost – škálovací zákon</div>
+  <div class="section-eq">P = P₀ · M^(3/4) &nbsp;|&nbsp; B (per-unit mass) = B₀ · M^(–1/4)</div>
+
+  <div class="controls">
+    <div class="ctrl-group">Exponent k:
+      <input type="range" id="bsk" min="0.5" max="1.2" step="0.01" value="0.75">
+      <span class="val" id="bskv">0.75</span>
+    </div>
+    <div class="ctrl-group">P₀:
+      <input type="range" id="bsp0" min="0.1" max="5" step="0.1" value="1">
+      <span class="val" id="bsp0v">1.0</span>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">P vs. M (aritmetická škála)</div>
+      <div class="chart-wrap" style="height:170px"><canvas id="bsLin" role="img" aria-label="Metabolismus vs hmotnost linerni"></canvas></div>
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">log P vs. log M → sklon k (srovnej ¾ vs. 1)</div>
+      <div class="chart-wrap" style="height:170px"><canvas id="bsLog" role="img" aria-label="Metabolismus vs hmotnost log-log"></canvas></div>
+    </div>
+  </div>
+  <div class="note">Kleiberův zákon: k = 3/4. Pokud vydělíte metabolismus hmotností: B = P/M = P₀·M^(k–1). Pro k = 3/4: B ∝ M^(–1/4) → menší organismus má VYŠŠÍ specifický metabolismus. Energy Equivalence Rule (Damuth): hustota × individuální metabolismus = konstanta (nezávislé na tělesné velikosti).</div>
+</div>
+
+<script>
+let bsLinChart, bsLogChart;
+function buildBS() {
+  const k = +document.getElementById('bsk').value;
+  const P0 = +document.getElementById('bsp0').value;
+  document.getElementById('bskv').textContent = k.toFixed(2);
+  document.getElementById('bsp0v').textContent = P0.toFixed(1);
+
+  const Ms = range(0.001, 10000, 100);
+  const Ps = Ms.map(m => +(P0 * Math.pow(m, k)).toFixed(4));
+  const Ps75 = Ms.map(m => +(P0 * Math.pow(m, 0.75)).toFixed(4));
+  const Ps1 = Ms.map(m => +(P0 * Math.pow(m, 1)).toFixed(4));
+
+  const logMs = Ms.map(m => +(Math.log10(m)).toFixed(3));
+  const logPs = Ps.map(p => +(Math.log10(p)).toFixed(3));
+  const logPs75 = Ps75.map(p => +(Math.log10(p)).toFixed(3));
+  const logPs1 = Ps1.map(p => +(Math.log10(p)).toFixed(3));
+
+  if (bsLinChart) bsLinChart.destroy();
+  if (bsLogChart) bsLogChart.destroy();
+
+  bsLinChart = new Chart(document.getElementById('bsLin'), {
+    type: 'line',
+    data: { labels: Ms.map(m => m > 999 ? (m/1000).toFixed(0)+'k' : m.toFixed(1)), datasets: [
+      { label: 'vaše k', data: Ps, borderColor: '#378ADD', borderWidth: 2, pointRadius: 0 },
+      { label: 'k=0.75', data: Ps75, borderColor: '#1D9E75', borderWidth: 1.5, borderDash: [5,4], pointRadius: 0 },
+      { label: 'k=1', data: Ps1, borderColor: '#888', borderWidth: 1, borderDash: [3,3], pointRadius: 0 }
+    ]},
+    options: { ...baseOpts('M (hmotnost)', 'P (metabolismus)'), plugins: { legend: { display: false } } }
+  });
+
+  bsLogChart = new Chart(document.getElementById('bsLog'), {
+    type: 'line',
+    data: { datasets: [
+      { label: 'vaše k', data: logMs.map((x,i) => ({ x, y: logPs[i] })), borderColor: '#378ADD', borderWidth: 2, pointRadius: 0 },
+      { label: 'k=0.75', data: logMs.map((x,i) => ({ x, y: logPs75[i] })), borderColor: '#1D9E75', borderWidth: 1.5, borderDash: [5,4], pointRadius: 0 },
+      { label: 'k=1', data: logMs.map((x,i) => ({ x, y: logPs1[i] })), borderColor: '#888', borderWidth: 1, borderDash: [3,3], pointRadius: 0 }
+    ]},
+    options: { ...baseOpts('log M', 'log P'), parsing: false, plugins: { legend: { display: false } } }
+  });
+}
+['bsk','bsp0'].forEach(id => document.getElementById(id).addEventListener('input', buildBS));
+buildBS();
+</script>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 8. FISHER / OPTIMÁLNÍ VĚK DOSPĚLOSTI -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">8. Fisheriánský model – optimální věk dospělosti (semelparní)</div>
+  <div class="section-eq">R₀ = e^(–c₁t) · c₂ · t^c₃ &nbsp;→ maximalizuj R₀ přes t</div>
+
+  <div class="controls">
+    <div class="ctrl-group">c₁ (mortalita):
+      <input type="range" id="fc1" min="0.01" max="0.5" step="0.01" value="0.1">
+      <span class="val" id="fc1v">0.10</span>
+    </div>
+    <div class="ctrl-group">c₂ (fek. koef.):
+      <input type="range" id="fc2" min="0.1" max="5" step="0.1" value="1">
+      <span class="val" id="fc2v">1.0</span>
+    </div>
+    <div class="ctrl-group">c₃ (fek. exp.):
+      <input type="range" id="fc3" min="0.5" max="4" step="0.1" value="2">
+      <span class="val" id="fc3v">2.0</span>
+    </div>
+  </div>
+
+  <div class="chart-wrap" style="height:200px">
+    <canvas id="fishChart" role="img" aria-label="Fisheriánský model optimálního věku dospělosti"></canvas>
+  </div>
+  <div class="note" id="fishNote"></div>
+</div>
+
+<script>
+let fishChart;
+function buildFish() {
+  const c1 = +document.getElementById('fc1').value;
+  const c2 = +document.getElementById('fc2').value;
+  const c3 = +document.getElementById('fc3').value;
+  document.getElementById('fc1v').textContent = c1.toFixed(2);
+  document.getElementById('fc2v').textContent = c2.toFixed(1);
+  document.getElementById('fc3v').textContent = c3.toFixed(1);
+
+  const tOpt = c3 / c1;
+  const ts = range(0.1, Math.min(tOpt * 3.5, 80), 200);
+  const R0 = ts.map(t => +(Math.exp(-c1 * t) * c2 * Math.pow(t, c3)).toFixed(5));
+  const R0max = Math.max(...R0);
+  const r_vals = ts.map(t => +(Math.log(Math.exp(-c1*t)*c2*Math.pow(t,c3))/t).toFixed(5));
+
+  if (fishChart) fishChart.destroy();
+  fishChart = new Chart(document.getElementById('fishChart'), {
+    type: 'line',
+    data: { labels: ts.map(v => v.toFixed(1)), datasets: [
+      { label: 'R₀(t)', data: R0, borderColor: '#378ADD', borderWidth: 2, pointRadius: 0,
+        yAxisID: 'y' },
+      { label: 'r(t)', data: r_vals, borderColor: '#D85A30', borderWidth: 1.5, borderDash: [5,4], pointRadius: 0,
+        yAxisID: 'y2' },
+      { label: 'optimum t*', data: ts.map(() => null).map((_, i) => ts[i] >= tOpt - 0.5 && ts[i] <= tOpt + 0.5 ? R0max : null),
+        borderColor: '#1D9E75', borderWidth: 1, borderDash: [3,3], pointRadius: 0, yAxisID: 'y' }
+    ]},
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(3)}` } } },
+      scales: {
+        x: { grid: { color: GRID }, ticks: { color: TICK, font: { size: 10 }, maxTicksLimit: 10 },
+             title: { display: true, text: 'věk dospělosti t', color: TICK, font: { size: 11 } } },
+        y: { grid: { color: GRID }, ticks: { color: TICK, font: { size: 10 } },
+             title: { display: true, text: 'R₀', color: '#378ADD', font: { size: 11 } } },
+        y2: { position: 'right', grid: { display: false }, ticks: { color: '#D85A30', font: { size: 10 } },
+              title: { display: true, text: 'r', color: '#D85A30', font: { size: 11 } } }
+      }
+    }
+  });
+
+  document.getElementById('fishNote').textContent =
+    `Optimální věk dospělosti t* = c₃/c₁ = ${c3.toFixed(1)}/${c1.toFixed(2)} = ${tOpt.toFixed(1)}. Modrá = R₀(t), oranžová = r(t). Obě mají maximum v různém bodě! Maximum R₀ vs. maximum r dávají různá optima – závisí na tom, jaký fitness proxy zvolíte.`;
+}
+['fc1','fc2','fc3'].forEach(id => document.getElementById(id).addEventListener('input', buildFish));
+buildFish();
+</script>
+
+<div style="padding:1rem 0 0.5rem;font-size:11px;color:var(--color-text-secondary);">
+  ↗ Kliknutím na název rovnice v každé sekci získáte více detailů. Grafy jsou interaktivní – přetahujte posuvníky.
+</div>
