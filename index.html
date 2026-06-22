@@ -1,70 +1,60 @@
-
-<h2 class="sr-only">Interaktivní přehled ekologické matematiky – grafy ke všem klíčovým rovnicím</h2>
-
-<style>
-* { box-sizing: border-box; }
-body { margin: 0; }
-.section {
-  border-top: 0.5px solid var(--color-border-tertiary);
-  padding: 1.5rem 0 0.5rem;
-}
-.section:first-of-type { border-top: none; padding-top: 0.5rem; }
-.section-title {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--color-text-primary);
-  margin: 0 0 4px;
-}
-.section-eq {
-  font-size: 12px;
-  font-family: var(--font-mono);
-  color: var(--color-text-secondary);
-  margin: 0 0 12px;
-  background: var(--color-background-secondary);
-  display: inline-block;
-  padding: 3px 8px;
-  border-radius: var(--border-radius-md);
-}
-.controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 20px;
-  margin-bottom: 12px;
-  align-items: center;
-}
-.ctrl-group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--color-text-secondary);
-}
-.ctrl-group input[type=range] { width: 100px; }
-.ctrl-group span.val {
-  min-width: 30px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--color-text-primary);
-}
-canvas { width: 100% !important; display: block; }
-.chart-wrap { position: relative; width: 100%; }
-.legend {
-  display: flex; flex-wrap: wrap; gap: 8px 16px;
-  margin-top: 6px; font-size: 11px; color: var(--color-text-secondary);
-}
-.leg-item { display: flex; align-items: center; gap: 4px; }
-.leg-dot { width: 10px; height: 3px; border-radius: 2px; }
-.note {
-  font-size: 11px;
-  color: var(--color-text-secondary);
-  margin-top: 6px;
-  line-height: 1.5;
-}
-</style>
-
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ekologická matematika – ucelený přehled s grafy</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$']]
+    }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<style>
+  /* Globální styly dokumentu */
+  body { font-family: sans-serif; margin: 0 auto; padding: 20px; max-width: 900px; color: #333; line-height: 1.6; }
+  h1 { color: #111; margin-top: 1.5em; border-bottom: 2px solid #ccc; padding-bottom: 0.5em; }
+  h2 { color: #222; margin-top: 1.5em; border-bottom: 1px solid #ddd; padding-bottom: 0.3em; }
+  h3 { color: #333; margin-top: 1.2em; }
+  table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+  th { background-color: #f9f9f9; }
+  blockquote { border-left: 4px solid #378ADD; margin: 1em 0; padding-left: 1em; color: #555; background: #f4f8fc; padding: 10px; border-radius: 4px; }
+  hr { border: 0; border-top: 1px solid #eee; margin: 2em 0; }
+  
+  /* Styly pro interaktivní sekce grafů */
+  :root {
+    --color-border-tertiary: #eee;
+    --color-text-primary: #111;
+    --color-text-secondary: #555;
+    --color-background-secondary: #f4f4f4;
+    --font-mono: monospace;
+    --font-sans: sans-serif;
+    --border-radius-md: 4px;
+  }
+  .section { border: 1px solid var(--color-border-tertiary); padding: 1.5rem; margin: 1.5rem 0; background: #fafafa; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+  .section-title { font-size: 18px; font-weight: 600; color: var(--color-text-primary); margin: 0 0 8px; }
+  .section-eq { font-size: 13px; font-family: var(--font-mono); color: var(--color-text-secondary); margin: 0 0 12px; background: #e0e0e0; display: inline-block; padding: 4px 8px; border-radius: var(--border-radius-md); }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px 20px; margin-bottom: 12px; align-items: center; }
+  .ctrl-group { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--color-text-secondary); }
+  .ctrl-group input[type=range] { width: 100px; cursor: pointer; }
+  .ctrl-group span.val { min-width: 35px; font-family: var(--font-mono); font-size: 12px; color: var(--color-text-primary); font-weight: bold; }
+  canvas { width: 100% !important; display: block; }
+  .chart-wrap { position: relative; width: 100%; background: #fff; padding: 10px; border-radius: 6px; border: 1px solid #ddd; box-sizing: border-box; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 6px; font-size: 12px; color: var(--color-text-secondary); }
+  .leg-item { display: flex; align-items: center; gap: 4px; }
+  .leg-dot { width: 12px; height: 4px; border-radius: 2px; }
+  .note { font-size: 12px; color: var(--color-text-secondary); margin-top: 10px; line-height: 1.5; background: #eef7ff; padding: 10px; border-radius: 4px; border-left: 3px solid #378ADD; }
+  .citation { font-size: 0.8em; color: #888; margin-left: 4px; }
+</style>
+</head>
+<body>
 
 <script>
+// Globální nastavení pro grafy
 const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
 const GRID = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)';
 const TICK = isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)';
@@ -95,109 +85,59 @@ function range(a, b, n) {
 Chart.defaults.font.family = 'var(--font-sans)';
 </script>
 
-<!-- ══════════════════════════════════════════════════════════ -->
-<!-- 1. LOGISTICKÁ ROVNICE (hustotně závislá formulace) -->
-<!-- ══════════════════════════════════════════════════════════ -->
+<h1>Ekologická matematika – ucelený přehled ke zkoušce</h1>
+<h3>(vzorce, odvození a koncepty napříč všemi přednáškami)</h3>
+
+<hr>
+
+<h2>JAK TENTO PŘEHLED POUŽÍVAT</h2>
+<p>Dokument je řazený stejně jako vaše přednášky, ale obsahuje <strong>pouze matematicko-statistický aparát</strong> – definice veličin, vzorce, odvození a logiku, proč vzorec vypadá tak, jak vypadá. Faktografie (jména, příklady, papíry) je vynechaná, pokud přímo nevysvětluje vzorec. <span class="citation"></span></p>
+
+<p>U každého bloku je krátké <strong>"PROČ TO TAK JE"</strong> – odvození z principu, ne jen vzorec k zapamatování. To je obvykle to nejtěžší u zkoušky, protože pokud pochopíte odvození, vzorec si odvodíte i bez nabiflování. <span class="citation"></span></p>
+
+<hr>
+
+<h2>1. NIKA – matematika niky a specializace</h2>
+
+<h3>1.1 Shannon index (entropie) – šířka niky</h3>
+<p>$$\log B = -\sum p_i \log p_i$$ <span class="citation"></span></p>
+<ul>
+  <li>$p_i$ = podíl jedinců/zdroje připadající na prostředí/zdroj *i* <span class="citation"></span></li>
+  <li>Stejný princip jako Shannon-Wiener index diverzity (viz kap. 6) – jde o <strong>entropii</strong>, tedy míru nejistoty, jaký zdroj/habitat si jedinec vybere. <span class="citation"></span></li>
+  <li>Čím rovnoměrněji druh využívá zdroje, tím vyšší entropie → širší nika. <span class="citation"></span></li>
+</ul>
+
+<h3>1.2 Levinsův index šířky niky</h3>
+<p>$$\frac{1}{B} = \sum p_i^2$$ <span class="citation"></span></p>
+<ul>
+  <li>Analogie k Simpsonovu indexu (viz 6.2) – součet čtverců podílů. <span class="citation"></span></li>
+  <li>Vysoké $\sum p_i^2$ (zdroje soustředěné na málo kategorií) → malé B → <strong>úzká nika</strong>. <span class="citation"></span></li>
+  <li><strong>PROČ TO TAK JE:</strong> Čtverec penalizuje nerovnoměrnost silněji než lineární průměr – pokud je jeden zdroj dominantní (vysoké $p_i$), jeho čtverec vzorec "nafoukne", takže B klesne. <span class="citation"></span></li>
+</ul>
+
+<h3>1.3 Species Specialization Index (SSI)</h3>
+<p>$$SSI = \frac{SD(\text{abundance napříč habitaty})}{\text{mean abundance}}$$ <span class="citation"></span><br>
+(koeficient variace abundance napříč habitatovými třídami) <span class="citation"></span></p>
+<ul>
+  <li>Vysoké SSI = velká variabilita abundance mezi habitaty = <strong>specialista</strong> <span class="citation"></span></li>
+  <li>Nízké SSI = abundance podobná všude = <strong>generalista</strong> <span class="citation"></span></li>
+</ul>
+
+<h3>1.4 Community Specialization Index (CSI)</h3>
+<p>$$CSI = \overline{SSI} \text{ (průměr SSI všech druhů v assemblage)}$$ <span class="citation"></span></p>
+
 <div class="section">
-  <div class="section-title">1. Logistická rovnice – dynamika populace</div>
-  <div class="section-eq">dN/dt = rN(1 – N/K) &nbsp;|&nbsp; per-capita: (1/N)dN/dt = r – aN</div>
+  <div class="section-title">INTERAKTIVNÍ GRAF: Shannon index šířky niky & Levinsův index <span class="citation"></span></div>
+  <div class="section-eq">log B = –Σpᵢ log pᵢ &nbsp;|&nbsp; 1/B = Σpᵢ² <span class="citation"></span></div>
 
-  <div class="controls">
-    <div class="ctrl-group">r (intrinsic rate):
-      <input type="range" id="lr" min="0.1" max="3" step="0.05" value="1">
-      <span class="val" id="lrv">1.0</span>
-    </div>
-    <div class="ctrl-group">K (carrying capacity):
-      <input type="range" id="lk" min="50" max="500" step="10" value="200">
-      <span class="val" id="lkv">200</span>
-    </div>
-    <div class="ctrl-group">N₀ (počáteční):
-      <input type="range" id="ln0" min="1" max="50" step="1" value="5">
-      <span class="val" id="ln0v">5</span>
-    </div>
-  </div>
-
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-    <div>
-      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">N(t) – S-křivka</div>
-      <div class="chart-wrap" style="height:180px"><canvas id="logN" role="img" aria-label="Logistický růst N v čase"></canvas></div>
-    </div>
-    <div>
-      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Per-capita růst vs. N (hustotní závislost)</div>
-      <div class="chart-wrap" style="height:180px"><canvas id="logPC" role="img" aria-label="Per-capita growth rate vs N"></canvas></div>
-    </div>
-  </div>
-  <div class="note">Levý graf: S-křivka (logistická funkce). Pravý graf: hustotně závislá formulace – lineární pokles per-capita růstu s N. Průsečík s osou x = K (rovnováha). Přidaná mortalita q: posune průsečík doleva → nižší K (vyřeší Ginzburgův paradox).</div>
-</div>
-
-<script>
-let logNChart, logPCChart;
-function buildLogistic() {
-  const r = +document.getElementById('lr').value;
-  const K = +document.getElementById('lk').value;
-  const N0 = +document.getElementById('ln0').value;
-  document.getElementById('lrv').textContent = r.toFixed(2);
-  document.getElementById('lkv').textContent = K;
-  document.getElementById('ln0v').textContent = N0;
-
-  const T = 80, dt = 0.1, steps = T / dt;
-  const ts = [], Ns = [];
-  let N = N0;
-  for (let i = 0; i <= steps; i++) {
-    ts.push(+(i * dt).toFixed(1));
-    Ns.push(+N.toFixed(4));
-    N += r * N * (1 - N / K) * dt;
-  }
-
-  const Nrange = range(0, K * 1.3, 120);
-  const pcData = Nrange.map(n => ({ x: +n.toFixed(2), y: +(r - r / K * n).toFixed(4) }));
-
-  const C1 = {
-    type: 'line',
-    data: { labels: ts, datasets: [{
-      label: 'N(t)', data: Ns, borderColor: '#378ADD', borderWidth: 2, pointRadius: 0, tension: 0.3,
-      fill: false
-    }, {
-      label: 'K', data: ts.map(() => K), borderColor: isDark ? '#FA8' : '#E07B30',
-      borderWidth: 1, borderDash: [6,4], pointRadius: 0
-    }]},
-    options: { ...baseOpts('čas t', 'N (jedinci)'), plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${Math.round(ctx.parsed.y)}` } } } }
-  };
-
-  const C2 = {
-    type: 'line',
-    data: { datasets: [{
-      label: 'per-capita (1/N)dN/dt', data: pcData, borderColor: '#1D9E75', borderWidth: 2, pointRadius: 0
-    }, {
-      label: '0', data: Nrange.map(n => ({ x: n, y: 0 })), borderColor: GRID, borderWidth: 1, pointRadius: 0
-    }]},
-    options: { ...baseOpts('N', 'per-capita rate'), parsing: false, plugins: { legend: { display: false } } }
-  };
-
-  if (logNChart) logNChart.destroy();
-  if (logPCChart) logPCChart.destroy();
-  logNChart = new Chart(document.getElementById('logN'), C1);
-  logPCChart = new Chart(document.getElementById('logPC'), C2);
-}
-['lr','lk','ln0'].forEach(id => document.getElementById(id).addEventListener('input', buildLogistic));
-buildLogistic();
-</script>
-
-<!-- ══════════════════════════════════════════════════════════ -->
-<!-- 2. REPRODUKČNÍ HODNOTA & R0 / r -->
-<!-- ══════════════════════════════════════════════════════════ -->
-<div class="section">
-  <div class="section-title">2. Shannon index šířky niky &amp; Levinsův index</div>
-  <div class="section-eq">log B = –Σpᵢ log pᵢ &nbsp;|&nbsp; 1/B = Σpᵢ²</div>
-
-  <div class="note" style="margin-bottom:10px;">Posuvníkem nastavte podíly využití habitats (celkový součet bude normalizován). Specialista: vše do 1-2 habitatů. Generalista: rovnoměrné rozložení.</div>
+  <div class="note" style="margin-bottom:10px;">Posuvníkem nastavte podíly využití habitats (celkový součet bude normalizován). Specialista: vše do 1-2 habitatů. Generalista: rovnoměrné rozložení. <span class="citation"></span></div>
   <div class="controls" style="flex-direction:column;align-items:flex-start;gap:6px;">
     <div id="niche-sliders" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:100%;">
     </div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;">
     <div>
-      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Využití habitatů (pᵢ)</div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Využití habitatů (pᵢ) <span class="citation"></span></div>
       <div class="chart-wrap" style="height:160px"><canvas id="nicheBar" role="img" aria-label="Histogram využití habitatů"></canvas></div>
     </div>
     <div style="display:flex;flex-direction:column;justify-content:center;gap:10px;padding:16px;">
@@ -261,12 +201,374 @@ buildNicheSliders();
 updateNiche();
 </script>
 
-<!-- ══════════════════════════════════════════════════════════ -->
-<!-- 3. METAPOPULACE – Levinsova rovnice -->
-<!-- ══════════════════════════════════════════════════════════ -->
+<hr>
+
+<h2>2. ŽIVOTNÍ HISTORIE – demografie a fitness</h2>
+<p>Toto je <strong>matematicky nejtěžší okruh</strong> – doporučuji mu věnovat nejvíc času. <span class="citation"></span></p>
+
+<h3>2.1 Life table – základní veličiny</h3>
+<table>
+  <tr><th>Symbol</th><th>Význam</th></tr>
+  <tr><td>$l_x$</td><td>pravděpodobnost přežití od narození do věku x: $l_x = S_x/S_0$</td></tr>
+  <tr><td>$m_x$</td><td>počet potomků na přeživšího jedince ve věkové třídě x (fecundity)</td></tr>
+  <tr><td>$F_x$</td><td>počet potomků produkovaných celou věkovou třídou x</td></tr>
+</table>
+<p><span class="citation"></span></p>
+
+<h3>2.2 Čistá reprodukční rychlost (Net reproductive rate)</h3>
+<p>$$R_0 = \sum l_x m_x = \sum F_x / S_0$$ <span class="citation"></span></p>
+<ul>
+  <li><strong>Co to znamená:</strong> průměrný počet potomků, které jedinec zplodí za celý život. <span class="citation"></span></li>
+  <li>Pro <strong>semelparní</strong> organismus (rozmnožuje se jen jednou, ve věku t): $R_0 = l_t m_t$ <span class="citation"></span></li>
+</ul>
+
+<h3>2.3 Vnitřní rychlost růstu populace (r)</h3>
+<p><strong>Přibližný vzorec:</strong><br>
+$$r \approx \frac{\ln(R_0)}{T_c}$$ <span class="citation"></span><br>
+kde $T_c$ = generační doba kohorty:<br>
+$$T_c = \frac{\sum x\, l_x m_x}{\sum l_x m_x} = \frac{\sum x\, l_x m_x}{R_0}$$ <span class="citation"></span><br>
+(= průměrný věk rodičů všech potomků vyprodukovaných jednou kohortou) <span class="citation"></span></p>
+
+<p><strong>Přesný vzorec (implicitní Euler-Lotkova rovnice):</strong><br>
+$$1 = \sum \lambda^{-x} l_x m_x = \sum e^{-rx} l_x m_x$$ <span class="citation"></span></p>
+<ul>
+  <li><strong>PROČ TO TAK JE:</strong> Toto je rovnice, kterou je nutno řešit numericky/iterativně pro r (není explicitní řešení). Princip: každá věková třída x přispívá k populaci "diskontovaným" způsobem – podobně jako úrok v ekonomice – protože pozdější potomstvo má menší váhu pro aktuální růst populace. <span class="citation"></span></li>
+  <li>Pro <strong>semelparní</strong> organismus: $r = \dfrac{\ln(l_t m_t)}{t}$ <span class="citation"></span></li>
+</ul>
+
+<h3>2.4 Geometric mean of r</h3>
+<ul>
+  <li>Používá se ve stochastickém prostředí (na rozdíl od r, které předpokládá konstantní prostředí). <span class="citation"></span></li>
+  <li>Klíčový rozdíl: u geometrického průměru stačí JEDNA nulová hodnota fitness (jeden "krach"), aby celkový dlouhodobý fitness klesl na nulu – multiplikativní efekt. <span class="citation"></span></li>
+</ul>
+
+<h3>2.5 Reprodukční hodnota (reproductive value) $v_x$</h3>
+<p>$$v_x = \sum_{y=x}^{\omega} e^{-r(y-x)} \frac{l_y}{l_x} m_y$$ <span class="citation"></span><br>
+ekvivalentně:<br>
+$$v_x = \frac{\sum_{y=x}^{\omega} e^{-ry} l_y m_y}{e^{-rx} l_x}$$ <span class="citation"></span></p>
+
+<p>Rozklad vzorce – co každá část znamená: <span class="citation"></span></p>
+<ul>
+  <li>$\dfrac{l_y}{l_x} = p_{xy}$ → pravděpodobnost přežití z věku x do věku y <span class="citation"></span></li>
+  <li>$m_y$ → fekundita ve věku y <span class="citation"></span></li>
+  <li>$e^{-r(y-x)}$ → "diskontování" potomstva populačním růstem (čím vzdálenější věk y, tím menší váha) <span class="citation"></span></li>
+  <li>Suma od x do ω (poslední věk) → sčítáme přes všechny budoucí věkové třídy <span class="citation"></span></li>
+</ul>
+<ul>
+  <li><strong>PROČ TO TAK JE:</strong> Reprodukční hodnota odpovídá na otázku "Kolik (diskontovaného) potomstva ještě jedinec ve věku x průměrně vyprodukuje – včetně sebe i všech budoucích věkových tříd?" Je to klíčová veličina pro pochopení, na které věkové třídy nejvíc působí selekce (citlivost/elasticita). <span class="citation"></span></li>
+</ul>
+
+<h4>2.5.1 Residuální reprodukční hodnota $v_x$ z tabulky (praktický postup)</h4>
+<p>Z přednášky – sloupce v praktické tabulce: <span class="citation"></span></p>
+<ol>
+  <li>$l_x$, $m_x$ – ze life table <span class="citation"></span></li>
+  <li>$e^{rx}/l_x$ – diskontní faktor <span class="citation"></span></li>
+  <li>$e^{-ry} l_y m_y$ – diskontované potomstvo <span class="citation"></span></li>
+  <li>$\sum e^{-ry} l_y m_y$ (kumulativní suma odzadu) <span class="citation"></span></li>
+  <li>$v_x$ = poslední sloupec / diskontní faktor <span class="citation"></span></li>
+</ol>
+
+<h3>2.6 Coleho paradox</h3>
+<p>Předpoklad: bez nákladů na reprodukci, konstantní fekundita a přežívání<br>
+$$m_{semel} = m_{itero} + \frac{S}{s}$$ <span class="citation"></span></p>
+<ul>
+  <li>Pokud Cole předpokládal $S = s = 1$ (dospělé i juvenilní přežívání = 100 %):<br>
+$$m_{semel} = m_{itero} + 1$$ <span class="citation"></span><br>
+→ "paradox": stačí přidat JEDEN potomek navíc k semelparní reprodukci a je stejně dobrá jako iteroparie. To je biologicky nereálné. <span class="citation"></span></li>
+  <li><strong>Řešení paradoxu:</strong> S a s nejsou 1, ale závisí na extrinsické mortalitě prostředí → stupeň iteroparie je dán poměrem dospělého a juvenilního přežívání, ne pouze počtem potomků. <span class="citation"></span></li>
+</ul>
+
+<h3>2.7 Iteroparní fitness – druhá modifikace</h3>
+<p>$$\lambda = ms + S = F + S$$ <span class="citation"></span></p>
+<ul>
+  <li>F a S jsou funkcí reprodukčního úsilí $\Theta$: $F(\Theta)$, $S(\Theta)$ <span class="citation"></span></li>
+  <li>Z toho lze odvodit <strong>trade-off křivku</strong> (implicitně definovaná) → alternativní grafická metoda optimalizace. <span class="citation"></span></li>
+</ul>
+
+<h3>2.8 Optimalizační modely (Fisherian optimality)</h3>
+<p><strong>Obecný princip:</strong> Maximalizujeme $R_0$ nebo r vzhledem k volnému parametru (např. věk dospělosti t), tj. hledáme:<br>
+$$\frac{\partial R_0}{\partial t} = 0 \quad \text{nebo} \quad \frac{\partial r}{\partial t} = 0$$ <span class="citation"></span></p>
+
+<p><strong>Příklad – semelparní organismus s neomezeným růstem:</strong> <span class="citation"></span></p>
+<ul>
+  <li>Předpoklady: $m_t = c_2 t^{c_3}$, $l_t = e^{-c_1 t}$ <span class="citation"></span></li>
+  <li>Dosazením: $R_0 = e^{-c_1 t} c_2 t^{c_3}$, $r = \dfrac{\ln(e^{-c_1t}c_2t^{c_3})}{t}$ <span class="citation"></span></li>
+  <li>Maximalizace dává:<br>
+$$\frac{\partial R_0}{\partial t}=0 \;\Rightarrow\; t^* = \frac{c_3}{c_1}$$ <span class="citation"></span><br>
+$$\frac{\partial r}{\partial t}=0 \;\Rightarrow\; t^* = \exp\left(1-\frac{\ln(c_2)}{c_3}\right)$$ <span class="citation"></span></li>
+</ul>
+
+<p><strong>Příklad – semelparní ryby (von Bertalanffy růst):</strong> <span class="citation"></span></p>
+<ul>
+  <li>$L_t = L_\infty(1-e^{-kt})$ (růst do dospělosti) <span class="citation"></span></li>
+  <li>$m_t = aL_t^3$ (fekundita úměrná objemu/krychli délky) <span class="citation"></span></li>
+  <li>$l_t = pe^{-Mt}$ (exponenciální mortalita) <span class="citation"></span></li>
+  <li>$R_0 = Ce^{-Mt}(1-e^{-kt})^3$, kde $C = paL_\infty^3$ <span class="citation"></span></li>
+  <li>Optimum:<br>
+$$\frac{\partial R_0}{\partial t}=0 \Rightarrow t^* = \frac{1}{k}\ln\left(\frac{3k}{M}+1\right)$$ <span class="citation"></span><br>
+$$\frac{\partial r}{\partial t}=0 \Rightarrow t^* = \frac{\ln[C(1-e^{-kt})^3]}{t}, \text{ kde } G=\frac{3k}{e^{kt}-1}$$ <span class="citation"></span></li>
+</ul>
+<ul>
+  <li><strong>PROČ TO TAK JE (obecně):</strong> Toto je standardní postup diferenciálního počtu – hledáme extrém funkce fitness vzhledem k volnému parametru (zde věk dospělosti). Derivace = 0 je podmínka maxima. Klíčové je umět <strong>interpretovat výsledný vztah</strong> (např. že optimální věk dospělosti roste s rychlostí růstu k a klesá s mortalitou M), ne nutně umět odvodit derivaci od nuly. <span class="citation"></span></li>
+</ul>
+
 <div class="section">
-  <div class="section-title">3. Metapopulační dynamika – Levinsova rovnice</div>
-  <div class="section-eq">dP/dt = i·P·(k–P) – e·P</div>
+  <div class="section-title">INTERAKTIVNÍ GRAF: Fisheriánský model – optimální věk dospělosti (semelparní) <span class="citation"></span></div>
+  <div class="section-eq">R₀ = e^(–c₁t) · c₂ · t^c₃ &nbsp;→ maximalizuj R₀ přes t <span class="citation"></span></div>
+
+  <div class="controls">
+    <div class="ctrl-group">c₁ (mortalita):
+      <input type="range" id="fc1" min="0.01" max="0.5" step="0.01" value="0.1">
+      <span class="val" id="fc1v">0.10</span>
+    </div>
+    <div class="ctrl-group">c₂ (fek. koef.):
+      <input type="range" id="fc2" min="0.1" max="5" step="0.1" value="1">
+      <span class="val" id="fc2v">1.0</span>
+    </div>
+    <div class="ctrl-group">c₃ (fek. exp.):
+      <input type="range" id="fc3" min="0.5" max="4" step="0.1" value="2">
+      <span class="val" id="fc3v">2.0</span>
+    </div>
+  </div>
+
+  <div class="chart-wrap" style="height:200px">
+    <canvas id="fishChart" role="img" aria-label="Fisheriánský model optimálního věku dospělosti"></canvas>
+  </div>
+  <div class="note" id="fishNote"></div>
+</div>
+
+<script>
+let fishChart;
+function buildFish() {
+  const c1 = +document.getElementById('fc1').value;
+  const c2 = +document.getElementById('fc2').value;
+  const c3 = +document.getElementById('fc3').value;
+  document.getElementById('fc1v').textContent = c1.toFixed(2);
+  document.getElementById('fc2v').textContent = c2.toFixed(1);
+  document.getElementById('fc3v').textContent = c3.toFixed(1);
+
+  const tOpt = c3 / c1;
+  const ts = range(0.1, Math.min(tOpt * 3.5, 80), 200);
+  const R0 = ts.map(t => +(Math.exp(-c1 * t) * c2 * Math.pow(t, c3)).toFixed(5));
+  const R0max = Math.max(...R0);
+  const r_vals = ts.map(t => +(Math.log(Math.exp(-c1*t)*c2*Math.pow(t,c3))/t).toFixed(5));
+
+  if (fishChart) fishChart.destroy();
+  fishChart = new Chart(document.getElementById('fishChart'), {
+    type: 'line',
+    data: { labels: ts.map(v => v.toFixed(1)), datasets: [
+      { label: 'R₀(t)', data: R0, borderColor: '#378ADD', borderWidth: 2, pointRadius: 0,
+        yAxisID: 'y' },
+      { label: 'r(t)', data: r_vals, borderColor: '#D85A30', borderWidth: 1.5, borderDash: [5,4], pointRadius: 0,
+        yAxisID: 'y2' },
+      { label: 'optimum t*', data: ts.map(() => null).map((_, i) => ts[i] >= tOpt - 0.5 && ts[i] <= tOpt + 0.5 ? R0max : null),
+        borderColor: '#1D9E75', borderWidth: 1, borderDash: [3,3], pointRadius: 0, yAxisID: 'y' }
+    ]},
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(3)}` } } },
+      scales: {
+        x: { grid: { color: GRID }, ticks: { color: TICK, font: { size: 10 }, maxTicksLimit: 10 },
+             title: { display: true, text: 'věk dospělosti t', color: TICK, font: { size: 11 } } },
+        y: { grid: { color: GRID }, ticks: { color: TICK, font: { size: 10 } },
+             title: { display: true, text: 'R₀', color: '#378ADD', font: { size: 11 } } },
+        y2: { position: 'right', grid: { display: false }, ticks: { color: '#D85A30', font: { size: 10 } },
+              title: { display: true, text: 'r', color: '#D85A30', font: { size: 11 } } }
+      }
+    }
+  });
+
+  document.getElementById('fishNote').textContent =
+    `Optimální věk dospělosti t* = c₃/c₁ = ${c3.toFixed(1)}/${c1.toFixed(2)} = ${tOpt.toFixed(1)}. Modrá = R₀(t), oranžová = r(t). Obě mají maximum v různém bodě! Maximum R₀ vs. maximum r dávají různá optima – závisí na tom, jaký fitness proxy zvolíte.`;
+}
+['fc1','fc2','fc3'].forEach(id => document.getElementById(id).addEventListener('input', buildFish));
+buildFish();
+</script>
+
+
+<h3>2.9 Lackova velikost snůšky a Smith-Fretwellův model</h3>
+<p><strong>Lackův/Smithův-Fretwellův model (bez nákladů na reprodukci):</strong> <span class="citation"></span></p>
+<p>Předpoklad: velikost snůšky C, přežívání potomka $s_C$ (klesá s C), produkce mladých $P = C \times s_C$ <span class="citation"></span></p>
+<p>Hledáme maximum P:<br>
+$$\frac{dP}{dC} = s_C + C\frac{ds_C}{dC}$$ <span class="citation"></span><br>
+$$\frac{dP}{dC}=0 \;\Rightarrow\; C^* = -\frac{s_C}{ds_C/dC}$$ <span class="citation"></span></p>
+
+<p><strong>Rozšířený model (s nákladem reprodukce na dospělé přežívání $S_C$):</strong> <span class="citation"></span></p>
+<p>Fitness: $\lambda = C \times s_C + S_C - 1$ <span class="citation"></span></p>
+<p>$$\frac{d\lambda}{dC} = s_C + C\frac{ds_C}{dC} + \frac{dS_C}{dC}$$ <span class="citation"></span><br>
+$$\frac{d\lambda}{dC}=0 \;\Rightarrow\; C^* = -\frac{s_C + dS_C/dC}{ds_C/dC}$$ <span class="citation"></span></p>
+<ul>
+  <li><strong>PROČ TO TAK JE:</strong> Klasický Lackův model ignoruje, že vyšší snůška snižuje přežívání RODIČE (cenu reprodukce). Po přidání $S_C$ do fitness funkce vychází <strong>nižší</strong> optimální velikost snůšky než u prostého Lackova modelu – to je klíčový bod k zapamatování, ne vzorec samotný. <span class="citation"></span></li>
+</ul>
+
+<hr>
+
+<h2>3. MAKROEKOLOGIE – škálovací zákony</h2>
+
+<h3>3.1 Obecný princip škálování (power law)</h3>
+<p>Lineární vztah v log-log prostoru:<br>
+$$\log P = k \log M + \log P_0$$ <span class="citation"></span><br>
+po "odlogaritmování":<br>
+$$P = P_0 M^k$$ <span class="citation"></span></p>
+<ul>
+  <li>k = sklon v log-log prostoru = exponent power law <span class="citation"></span></li>
+  <li><strong>Toto je NEJDŮLEŽITĚJŠÍ matematický princip celé makroekologie</strong> – skoro všechny vztahy v této kapitole jsou variace tohoto vzorce. <span class="citation"></span></li>
+</ul>
+
+<h3>3.2 Metabolismus a tělesná velikost</h3>
+<p>$$P = P_0 M^{3/4}$$ (Kleiberův zákon – celkový metabolismus) <span class="citation"></span></p>
+<p>Po vydělení hmotností (metabolismus na jednotku hmotnosti):<br>
+$$B = B_0 M^{-1/4}$$ <span class="citation"></span></p>
+<ul>
+  <li><strong>PROČ ¾:</strong> Vychází z constraints na transportní sítě (cévy, trachey) v organismu – metabolismus probíhá na subcelulární úrovni, ale musí být zásobován přes síť, jejíž efektivita škáluje s tělesnou hmotností specifickým způsobem → ¾ scaling = metabolická teorie ekologie. <span class="citation"></span></li>
+  <li><strong>Důležitá nuance ze zkoušky:</strong> ¾ scaling platí dobře PŘES organismální skupiny jen u <strong>růstu</strong> (produkce biomasy), ne nutně u bazálního metabolismu (tam je to blíž k 1 mezi skupinami, ¾ platí spíš UVNITŘ skupin). <span class="citation"></span></li>
+</ul>
+
+<h3>3.3 Abundance–tělesná velikost</h3>
+<p>$$D = K M^{-3/4}$$ (hustota klesá s hmotností) <span class="citation"></span></p>
+<p><strong>Energetic equivalence rule (Damuth):</strong><br>
+$$C = D \times P = KM^{-3/4} \times P_0 M^{3/4} = KP_0 M^0 = kP_0$$ <span class="citation"></span></p>
+<ul>
+  <li><strong>PROČ TO TAK JE:</strong> Pokud vynásobíte hustotu (klesá jako $M^{-3/4}$) s metabolismem na jedince (roste jako $M^{3/4}$), exponenty se PŘESNĚ vyruší → celková energetická spotřeba populace <strong>nezávisí na tělesné velikosti</strong>. To je elegantní důsledek, ne empirická náhoda – proto se tomu říká "rule" (zákon), ne jen vzorec. <span class="citation"></span></li>
+</ul>
+
+<div class="section">
+  <div class="section-title">INTERAKTIVNÍ GRAF: Metabolismus a tělesná velikost – škálovací zákon <span class="citation"></span></div>
+  <div class="section-eq">P = P₀ · M^(3/4) &nbsp;|&nbsp; B (per-unit mass) = B₀ · M^(–1/4) <span class="citation"></span></div>
+
+  <div class="controls">
+    <div class="ctrl-group">Exponent k:
+      <input type="range" id="bsk" min="0.5" max="1.2" step="0.01" value="0.75">
+      <span class="val" id="bskv">0.75</span>
+    </div>
+    <div class="ctrl-group">P₀:
+      <input type="range" id="bsp0" min="0.1" max="5" step="0.1" value="1">
+      <span class="val" id="bsp0v">1.0</span>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">P vs. M (aritmetická škála) <span class="citation"></span></div>
+      <div class="chart-wrap" style="height:170px"><canvas id="bsLin" role="img" aria-label="Metabolismus vs hmotnost linerni"></canvas></div>
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">log P vs. log M → sklon k (srovnej ¾ vs. 1) <span class="citation"></span></div>
+      <div class="chart-wrap" style="height:170px"><canvas id="bsLog" role="img" aria-label="Metabolismus vs hmotnost log-log"></canvas></div>
+    </div>
+  </div>
+  <div class="note">Kleiberův zákon: k = 3/4. Pokud vydělíte metabolismus hmotností: B = P/M = P₀·M^(k–1). Pro k = 3/4: B ∝ M^(–1/4) → menší organismus má VYŠŠÍ specifický metabolismus. Energy Equivalence Rule (Damuth): hustota × individuální metabolismus = konstanta (nezávislé na tělesné velikosti). <span class="citation"></span></div>
+</div>
+
+<script>
+let bsLinChart, bsLogChart;
+function buildBS() {
+  const k = +document.getElementById('bsk').value;
+  const P0 = +document.getElementById('bsp0').value;
+  document.getElementById('bskv').textContent = k.toFixed(2);
+  document.getElementById('bsp0v').textContent = P0.toFixed(1);
+
+  const Ms = range(0.001, 10000, 100);
+  const Ps = Ms.map(m => +(P0 * Math.pow(m, k)).toFixed(4));
+  const Ps75 = Ms.map(m => +(P0 * Math.pow(m, 0.75)).toFixed(4));
+  const Ps1 = Ms.map(m => +(P0 * Math.pow(m, 1)).toFixed(4));
+
+  const logMs = Ms.map(m => +(Math.log10(m)).toFixed(3));
+  const logPs = Ps.map(p => +(Math.log10(p)).toFixed(3));
+  const logPs75 = Ps75.map(p => +(Math.log10(p)).toFixed(3));
+  const logPs1 = Ps1.map(p => +(Math.log10(p)).toFixed(3));
+
+  if (bsLinChart) bsLinChart.destroy();
+  if (bsLogChart) bsLogChart.destroy();
+
+  bsLinChart = new Chart(document.getElementById('bsLin'), {
+    type: 'line',
+    data: { labels: Ms.map(m => m > 999 ? (m/1000).toFixed(0)+'k' : m.toFixed(1)), datasets: [
+      { label: 'vaše k', data: Ps, borderColor: '#378ADD', borderWidth: 2, pointRadius: 0 },
+      { label: 'k=0.75', data: Ps75, borderColor: '#1D9E75', borderWidth: 1.5, borderDash: [5,4], pointRadius: 0 },
+      { label: 'k=1', data: Ps1, borderColor: '#888', borderWidth: 1, borderDash: [3,3], pointRadius: 0 }
+    ]},
+    options: { ...baseOpts('M (hmotnost)', 'P (metabolismus)'), plugins: { legend: { display: false } } }
+  });
+
+  bsLogChart = new Chart(document.getElementById('bsLog'), {
+    type: 'line',
+    data: { datasets: [
+      { label: 'vaše k', data: logMs.map((x,i) => ({ x, y: logPs[i] })), borderColor: '#378ADD', borderWidth: 2, pointRadius: 0 },
+      { label: 'k=0.75', data: logMs.map((x,i) => ({ x, y: logPs75[i] })), borderColor: '#1D9E75', borderWidth: 1.5, borderDash: [5,4], pointRadius: 0 },
+      { label: 'k=1', data: logMs.map((x,i) => ({ x, y: logPs1[i] })), borderColor: '#888', borderWidth: 1, borderDash: [3,3], pointRadius: 0 }
+    ]},
+    options: { ...baseOpts('log M', 'log P'), parsing: false, plugins: { legend: { display: false } } }
+  });
+}
+['bsk','bsp0'].forEach(id => document.getElementById(id).addEventListener('input', buildBS));
+buildBS();
+</script>
+
+<h3>3.4 Body size distribution – nulová hypotéza</h3>
+<p>Náhodný multiplikativní proces vede k <strong>log-normálnímu rozdělení</strong>: <span class="citation"></span></p>
+<ul>
+  <li>Relativní (ne absolutní) změna velikosti za jednotku času roste s tělesnou hmotností druhu. <span class="citation"></span></li>
+  <li>Proto: distribuce velikostí je log-normální (Gaussovo rozdělení v log škále) → vysvětluje, proč většina druhů je malých. <span class="citation"></span></li>
+</ul>
+
+<h3>3.5 Species-Abundance Distribution (SAD) – statistická rozdělení</h3>
+<ul>
+  <li>Empiricky: <strong>log-normální rozdělení</strong> (ale ne dokonale – "ne-lognormální" odchylky jsou časté). <span class="citation"></span></li>
+  <li><strong>"Broken stick" model:</strong> Sekvenční náhodné lámání zdroje – metafora pro nerovnoměrné dělení zdrojů mezi druhy. <span class="citation"></span></li>
+  <li>Centrální limitní teorém (CLT) <strong>rozšířený</strong> o prostorovou agregaci v heterogenním prostředí – pouze za této podmínky vychází "ideální" log-normální rozdělení. <span class="citation"></span></li>
+</ul>
+
+<hr>
+
+<h2>4. PROSTOROVÁ EKOLOGIE</h2>
+
+<h3>4.1 Taylor's power law</h3>
+<p>Vztah mezi průměrem a rozptylem abundance (lineární v log-log škále):<br>
+$$\log(\text{variance}) = k \log(\text{mean}) + \log(c)$$ <span class="citation"></span><br>
+tedy opět power law: $variance = c \cdot mean^k$ <span class="citation"></span></p>
+<ul>
+  <li>Sklon k a intercept se liší mezi druhy/habitáty. <span class="citation"></span></li>
+</ul>
+
+<h3>4.2 Růstová rovnice populace (obecný rámec)</h3>
+<p>$$\frac{dN}{dt} = B - D + I - E$$ <span class="citation"></span><br>
+(birth – death + immigration – emigration) <span class="citation"></span></p>
+
+<h3>4.3 Dispersal kernel</h3>
+<ul>
+  <li>Funkce vztahující pravděpodobnost kolonizace ke vzdálenosti od zdroje (typicky klesající křivka, zvonovitý/exponenciální tvar). <span class="citation"></span></li>
+</ul>
+
+<h3>4.4 Allee efekt</h3>
+<p>Pozitivní hustotní závislost při nízké hustotě populace: <span class="citation"></span></p>
+<ul>
+  <li>per capita růst NEJPRVE roste s hustotou (na rozdíl od klasické logistické rovnice, kde klesá od začátku), pak teprve klesá → graf má vrchol uprostřed, ne na začátku. <span class="citation"></span></li>
+</ul>
+
+<h3>4.5 Levinsova rovnice metapopulační dynamiky</h3>
+<p>$$\frac{dP}{dt} = iP(k-P) - eP$$ <span class="citation"></span></p>
+
+<table>
+  <tr><th>Symbol</th><th>Význam</th></tr>
+  <tr><td>P</td><td>počet obsazených plošek (patches)</td></tr>
+  <tr><td>k</td><td>celkový počet plošek</td></tr>
+  <tr><td>(k–P)</td><td>počet neobsazených plošek</td></tr>
+  <tr><td>i</td><td>imigrační konstanta</td></tr>
+  <tr><td>e</td><td>extinkční konstanta</td></tr>
+</table>
+<p><span class="citation"></span></p>
+
+<ul>
+  <li><strong>Kolonizační člen:</strong> $iP(k-P)$ → parabola, maximum při $P = k/2$ (přesně polovina obsazených plošek). <span class="citation"></span></li>
+  <li><strong>Extinkční člen:</strong> $eP$ → lineární, roste s počtem obsazených plošek (čím víc populací, tím víc jich může vyhynout). <span class="citation"></span></li>
+  <li><strong>Rovnováha (ustálený stav):</strong> kde se křivky kolonizace a extinkce protnou → $\frac{dP}{dt}=0$ <span class="citation"></span></li>
+  <li><strong>PROČ TO TAK JE:</strong> Tvar kolonizační křivky (parabola) plyne z toho, že kolonizace potřebuje JAK zdroj migrantů (P obsazených plošek), TAK cíl migrace (k–P neobsazených plošek) – je to součin dvou klesajících/rostoucích veličin, proto parabola. <span class="citation"></span></li>
+</ul>
+
+<div class="section">
+  <div class="section-title">INTERAKTIVNÍ GRAF: Metapopulační dynamika – Levinsova rovnice <span class="citation"></span></div>
+  <div class="section-eq">dP/dt = i·P·(k–P) – e·P <span class="citation"></span></div>
 
   <div class="controls">
     <div class="ctrl-group">i (kolonizace):
@@ -285,11 +587,11 @@ updateNiche();
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
     <div>
-      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">P(t) – dynamika obsazenosti</div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">P(t) – dynamika obsazenosti <span class="citation"></span></div>
       <div class="chart-wrap" style="height:170px"><canvas id="metaT" role="img" aria-label="Metapopulační dynamika v čase"></canvas></div>
     </div>
     <div>
-      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Kolonizace vs. extinkce (rovnováha = průsečík)</div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Kolonizace vs. extinkce (rovnováha = průsečík) <span class="citation"></span></div>
       <div class="chart-wrap" style="height:170px"><canvas id="metaEq" role="img" aria-label="Kolonizační a extinkční křivky"></canvas></div>
     </div>
   </div>
@@ -352,12 +654,38 @@ function buildMeta() {
 buildMeta();
 </script>
 
-<!-- ══════════════════════════════════════════════════════════ -->
-<!-- 4. SPECIES-AREA RELATIONSHIP -->
-<!-- ══════════════════════════════════════════════════════════ -->
+<h3>4.6 Hanského "rescue effect" – modifikace</h3>
+<ul>
+  <li>Extinkční křivka se mění z lineární na <strong>konkávní</strong> (klesající se vyšším P) – víc migrantů snižuje pravděpodobnost extinkce na plošku. <span class="citation"></span></li>
+  <li>Vede to k <strong>bistabilitě</strong>: dvě rovnováhy (jedna stabilní s vysokým P, jedna nestabilní – práh, pod kterým metapopulace vymírá). <span class="citation"></span></li>
+  <li>Tohle je důležitý kvalitativní bod: lineární model = 1 rovnováha, model s rescue efektem = potenciálně 2 rovnováhy (jedna z nich nestabilní = "tipping point"). <span class="citation"></span></li>
+</ul>
+
+<h3>4.7 Species-Area Relationship (SAR)</h3>
+<p><strong>Základní mocninný (power law) tvar:</strong><br>
+$$S = C A^z$$ <span class="citation"></span><br>
+v log-log škále:<br>
+$$\log S = z \log A + \log C$$ <span class="citation"></span></p>
+
+<table>
+  <tr><th>Symbol</th><th>Význam</th></tr>
+  <tr><td>S</td><td>počet druhů</td></tr>
+  <tr><td>A</td><td>plocha</td></tr>
+  <tr><td>C</td><td>intercept = průměrný počet druhů na jednotku plochy</td></tr>
+  <tr><td>z</td><td>sklon SAR v log-log prostoru</td></tr>
+</table>
+<p><span class="citation"></span></p>
+
+<p><strong>Typické hodnoty z (DŮLEŽITÉ – časté u zkoušky):</strong> <span class="citation"></span></p>
+<ul>
+  <li>0,1–0,2 → plochy uvnitř kontinuálního kontinentu (intraprovinciální) <span class="citation"></span></li>
+  <li>0,25–0,5 → ostrovy (souostroví) <span class="citation"></span></li>
+  <li>~0,8–1,0 → mezikontinentální srovnání (téměř proporcionální vztah) <span class="citation"></span></li>
+</ul>
+
 <div class="section">
-  <div class="section-title">4. Species-Area Relationship (SAR)</div>
-  <div class="section-eq">S = C · Aᶻ &nbsp;(log S = z·log A + log C)</div>
+  <div class="section-title">INTERAKTIVNÍ GRAF: Species-Area Relationship (SAR) <span class="citation"></span></div>
+  <div class="section-eq">S = C · Aᶻ &nbsp;(log S = z·log A + log C) <span class="citation"></span></div>
 
   <div class="controls">
     <div class="ctrl-group">z (sklon):
@@ -372,15 +700,15 @@ buildMeta();
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
     <div>
-      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">S vs. A (aritmetická škála)</div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">S vs. A (aritmetická škála) <span class="citation"></span></div>
       <div class="chart-wrap" style="height:170px"><canvas id="sarLin" role="img" aria-label="SAR lineární škála"></canvas></div>
     </div>
     <div>
-      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">log S vs. log A (log-log škála → přímka)</div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">log S vs. log A (log-log škála → přímka) <span class="citation"></span></div>
       <div class="chart-wrap" style="height:170px"><canvas id="sarLog" role="img" aria-label="SAR log-log škála"></canvas></div>
     </div>
   </div>
-  <div class="note">Typické hodnoty z: 0.1–0.2 uvnitř kontinentu, 0.25–0.5 ostrovy, ~1 mezikontinentální srovnání. Přímka v log-log grafu = power law. Intercept C = průměrný počet druhů na jednotku plochy.</div>
+  <div class="note">Typické hodnoty z: 0.1–0.2 uvnitř kontinentu, 0.25–0.5 ostrovy, ~1 mezikontinentální srovnání. Přímka v log-log grafu = power law. Intercept C = průměrný počet druhů na jednotku plochy. <span class="citation"></span></div>
   <div style="display:flex;gap:16px;margin-top:8px;font-size:11px;color:var(--color-text-secondary)">
     <div style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:20px;height:2px;background:#378ADD"></span>vaše z = <span id="sarZlab">0.30</span></div>
     <div style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:20px;height:2px;background:#1D9E75;opacity:0.6;border-top:2px dashed #1D9E75"></span>z = 0.15 (kontinent)</div>
@@ -438,12 +766,464 @@ function buildSAR() {
 buildSAR();
 </script>
 
-<!-- ══════════════════════════════════════════════════════════ -->
-<!-- 5. LOTKA-VOLTERRA PREDÁTOR-KOŘIST -->
-<!-- ══════════════════════════════════════════════════════════ -->
+<h3>4.8 Odvození SAR ze vzorkování SAD</h3>
+<p>$$z = -\frac{\ln(\bar{\pi})}{\ln(A_{tot})}$$ <span class="citation"></span></p>
+<ul>
+  <li>$\bar\pi$ = průměrná relativní abundance (souvisí s tím, jak vzácné jsou druhy v SAD) <span class="citation"></span></li>
+  <li><strong>PROČ TO TAK JE:</strong> Čím vzácnější jsou druhy v komunitě (menší $\bar\pi$), tím strměji roste S s plochou na začátku (potřebujeme velkou plochu, abychom "nachytali" vzácné druhy) → z je vyšší. Proto je <strong>beta diverzita přímo spjata s mírou vzácnosti druhů</strong>. <span class="citation"></span></li>
+</ul>
+
+<h3>4.9 Třífázový SAR (non-power-law části)</h3>
+<ol>
+  <li><strong>Fáze 1</strong> (malá plocha): individual sampling – limitováno počtem JEDINCŮ, ne druhů <span class="citation"></span></li>
+  <li><strong>Fáze 2</strong> (střední plocha): fraktálová distribuce druhů v rámci arelu – zde platí přibližně power law <span class="citation"></span></li>
+  <li><strong>Fáze 3</strong> (velká plocha > průměrný areál druhu): omezeno velikostí arelů (range limits), křivka opět zrychluje (z→1) <span class="citation"></span></li>
+</ol>
+<ul>
+  <li>Pouze vztah <strong>jedinci–plocha</strong> je čistě lineární v log-log prostoru; SAR (druhy–plocha) je proto vždy zakřivený, protože je odvozený nepřímo (přes SAD). <span class="citation"></span></li>
+</ul>
+
+<h3>4.10 Fraktální vlastnosti – škálování počtu plošek</h3>
+<p>$$n \propto (1/L)^D$$ <span class="citation"></span><br>
+(power law mezi měřítkem 1/L a počtem obsazených plošek n, kde D je fraktální dimenze) <span class="citation"></span></p>
+
+<p>Příklad z přednášky: <span class="citation"></span></p>
+<table>
+  <tr><th>1/L</th><th>n</th></tr>
+  <tr><td>1</td><td>1</td></tr>
+  <tr><td>3</td><td>5</td></tr>
+  <tr><td>9</td><td>25</td></tr>
+  <tr><td>27</td><td>125</td></tr>
+</table>
+<p><span class="citation"></span></p>
+
+<hr>
+
+<h2>5. POPULAČNÍ DYNAMIKA (jednodruhová) – diferenciální rovnice</h2>
+
+<h3>5.1 Exponenciální růst</h3>
+<p>$$\frac{dN}{dt} = (b-q)N = rN$$ <span class="citation"></span></p>
+<ul>
+  <li>$b$ = natalita na jedince, $q$ = mortalita na jedince, $r = b - q$ <span class="citation"></span></li>
+  <li>Neomezený – nerealistický (Malthus, 1798). <span class="citation"></span></li>
+</ul>
+
+<h3>5.2 Logistická rovnice (klasická)</h3>
+<p>$$\frac{dN}{dt} = rN\left(\frac{K-N}{K}\right) = rN\left(1-\frac{N}{K}\right)$$ <span class="citation"></span></p>
+<ul>
+  <li>K = nosná kapacita (carrying capacity) <span class="citation"></span></li>
+  <li><strong>Tři paradoxy klasické logistické rovnice</strong> (důležité k pochopení, ne k biflování):
+    <ol>
+      <li><strong>Levinsův paradox:</strong> Pokud N>K, r může být záporné → matematicky nesmyslný pozitivní růst.</li>
+      <li><strong>Ginzburgův paradox:</strong> Přidaná mortalita by měla snížit rovnováhu (logicky), ale v klasické rovnici K je "daný strop", který se nemůže měnit.</li>
+      <li><strong>Paradox r-K strategií:</strong> Růst r by měl zvyšovat K, což odporuje představě nezávislých r a K parametrů.</li>
+    </ol>
+    <span class="citation"></span>
+  </li>
+</ul>
+
+<h3>5.3 Hustotně závislá (density-dependent) formulace – lepší derivace</h3>
+<p>Per capita růst klesá lineárně s hustotou (Verhulst, 1838):<br>
+$$\frac{1}{N}\frac{dN}{dt} = r - aN$$ <span class="citation"></span><br>
+$$\frac{dN}{dt} = rN - aN^2$$ <span class="citation"></span></p>
+<ul>
+  <li>a = sklon poklesu growth rate s rostoucím N <span class="citation"></span></li>
+  <li>Klasická logistická rovnice se odvodí dosazením $a = r/K$:<br>
+$$\frac{dN}{dt} = rN - \frac{r}{K}N^2 = rN\left(1-\frac{N}{K}\right)$$ <span class="citation"></span></li>
+</ul>
+
+<p><strong>Tato formulace ŘEŠÍ všechny tři paradoxy:</strong> <span class="citation"></span></p>
+<ol>
+  <li>Levinsův paradox → vyřešen: K je zde JEN rovnovážný bod (ne pevný strop), takže N>K dává smysl jako nestabilní rovnováha s pozitivní hustotní závislostí. <span class="citation"></span></li>
+  <li>Ginzburgův paradox → vyřešen: přidaná mortalita q snižuje efektivní r na $r' = r-q$, což snižuje K = $(r-q)/a$ → K se PŘIROZENĚ mění. <span class="citation"></span></li>
+  <li>Paradox r-K → vyřešen stejnou logikou (K = r/a, takže změna r mění K automaticky, není to nezávislý trade-off). <span class="citation"></span></li>
+</ol>
+
+<p><strong>S přidanou mortalitou:</strong><br>
+$$\frac{dN}{dt} = rN - qN - aN^2 = (r-q)N - aN^2$$ <span class="citation"></span><br>
+nová rovnováha: $K' = (r-q)/a$ <span class="citation"></span></p>
+
 <div class="section">
-  <div class="section-title">5. Lotka-Volterra – predátor-kořist</div>
-  <div class="section-eq">dR/dt = rR – aNR &nbsp;|&nbsp; dN/dt = faRN – qN</div>
+  <div class="section-title">INTERAKTIVNÍ GRAF: Logistická rovnice – dynamika populace <span class="citation"></span></div>
+  <div class="section-eq">dN/dt = rN(1 – N/K) &nbsp;|&nbsp; per-capita: (1/N)dN/dt = r – aN <span class="citation"></span></div>
+
+  <div class="controls">
+    <div class="ctrl-group">r (intrinsic rate):
+      <input type="range" id="lr" min="0.1" max="3" step="0.05" value="1">
+      <span class="val" id="lrv">1.0</span>
+    </div>
+    <div class="ctrl-group">K (carrying capacity):
+      <input type="range" id="lk" min="50" max="500" step="10" value="200">
+      <span class="val" id="lkv">200</span>
+    </div>
+    <div class="ctrl-group">N₀ (počáteční):
+      <input type="range" id="ln0" min="1" max="50" step="1" value="5">
+      <span class="val" id="ln0v">5</span>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">N(t) – S-křivka <span class="citation"></span></div>
+      <div class="chart-wrap" style="height:180px"><canvas id="logN" role="img" aria-label="Logistický růst N v čase"></canvas></div>
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Per-capita růst vs. N (hustotní závislost) <span class="citation"></span></div>
+      <div class="chart-wrap" style="height:180px"><canvas id="logPC" role="img" aria-label="Per-capita growth rate vs N"></canvas></div>
+    </div>
+  </div>
+  <div class="note">Levý graf: S-křivka (logistická funkce). Pravý graf: hustotně závislá formulace – lineární pokles per-capita růstu s N. Průsečík s osou x = K (rovnováha). Přidaná mortalita q: posune průsečík doleva → nižší K (vyřeší Ginzburgův paradox). <span class="citation"></span></div>
+</div>
+
+<script>
+let logNChart, logPCChart;
+function buildLogistic() {
+  const r = +document.getElementById('lr').value;
+  const K = +document.getElementById('lk').value;
+  const N0 = +document.getElementById('ln0').value;
+  document.getElementById('lrv').textContent = r.toFixed(2);
+  document.getElementById('lkv').textContent = K;
+  document.getElementById('ln0v').textContent = N0;
+
+  const T = 80, dt = 0.1, steps = T / dt;
+  const ts = [], Ns = [];
+  let N = N0;
+  for (let i = 0; i <= steps; i++) {
+    ts.push(+(i * dt).toFixed(1));
+    Ns.push(+N.toFixed(4));
+    N += r * N * (1 - N / K) * dt;
+  }
+
+  const Nrange = range(0, K * 1.3, 120);
+  const pcData = Nrange.map(n => ({ x: +n.toFixed(2), y: +(r - r / K * n).toFixed(4) }));
+
+  const C1 = {
+    type: 'line',
+    data: { labels: ts, datasets: [{
+      label: 'N(t)', data: Ns, borderColor: '#378ADD', borderWidth: 2, pointRadius: 0, tension: 0.3,
+      fill: false
+    }, {
+      label: 'K', data: ts.map(() => K), borderColor: isDark ? '#FA8' : '#E07B30',
+      borderWidth: 1, borderDash: [6,4], pointRadius: 0
+    }]},
+    options: { ...baseOpts('čas t', 'N (jedinci)'), plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${Math.round(ctx.parsed.y)}` } } } }
+  };
+
+  const C2 = {
+    type: 'line',
+    data: { datasets: [{
+      label: 'per-capita (1/N)dN/dt', data: pcData, borderColor: '#1D9E75', borderWidth: 2, pointRadius: 0
+    }, {
+      label: '0', data: Nrange.map(n => ({ x: n, y: 0 })), borderColor: GRID, borderWidth: 1, pointRadius: 0
+    }]},
+    options: { ...baseOpts('N', 'per-capita rate'), parsing: false, plugins: { legend: { display: false } } }
+  };
+
+  if (logNChart) logNChart.destroy();
+  if (logPCChart) logPCChart.destroy();
+  logNChart = new Chart(document.getElementById('logN'), C1);
+  logPCChart = new Chart(document.getElementById('logPC'), C2);
+}
+['lr','lk','ln0'].forEach(id => document.getElementById(id).addEventListener('input', buildLogistic));
+buildLogistic();
+</script>
+
+<h3>5.4 Generalizovaná logistická rovnice (theta-logistic)</h3>
+<p>$$\frac{dN}{dt} = rN\left(1-\left(\frac{N}{K}\right)^\theta\right)$$ <span class="citation"></span></p>
+<ul>
+  <li>$\theta = 1$ → klasická logistická (lineární hustotní závislost) <span class="citation"></span></li>
+  <li>$\theta \neq 1$ → nelineární tvar hustotní závislosti <span class="citation"></span></li>
+</ul>
+
+<h3>5.5 Gompertzova rovnice</h3>
+<p>$$\frac{dN}{dt} = rN\log\left(\frac{K}{N}\right)$$ <span class="citation"></span><br>
+per capita verze:<br>
+$$\frac{1}{N}\frac{dN}{dt} = r - a\log N$$ <span class="citation"></span></p>
+<ul>
+  <li>Hustotní závislost je vztažena k <strong>logaritmu</strong> počtu jedinců, ne k jedincům samým. <span class="citation"></span></li>
+</ul>
+
+<blockquote>
+  <strong>POZOR – terminologická past ze zkoušky:</strong> *logistická ROVNICE* (diferenciální rovnice popisující rychlost změny, výše) ≠ *logistická FUNKCE* (řešení této rovnice = vztah N(t), S-křivka, integrál rovnice pro počáteční N blízké 0). <span class="citation"></span>
+</blockquote>
+
+<h3>5.6 Coupled dynamika zdroje a populace (předznamenání Lotka-Volterra)</h3>
+<p>$$\frac{dR}{dt} = P - aNR \qquad \frac{dN}{dt} = faRN - qN$$ <span class="citation"></span></p>
+<p>Nulové izokliny (zero-growth):<br>
+$$N = \frac{P}{aR} \qquad R = \frac{q}{fa}$$ <span class="citation"></span><br>
+Carrying capacity (průsečík obou izoklin):<br>
+$$N = \frac{P}{aR} = \frac{Pfa}{aq} = \frac{Pf}{q}$$ <span class="citation"></span></p>
+
+<hr>
+
+<h2>6. DIVERZITA – indexy a beta-diverzita</h2>
+
+<h3>6.1 Shannon-Wiener index (H)</h3>
+<p>$$H = -\sum_{i=1}^{S} p_i \log p_i$$ <span class="citation"></span></p>
+<ul>
+  <li>S = počet druhů, $p_i$ = relativní zastoupení druhu i <span class="citation"></span></li>
+  <li>H = 0 pouze pokud je v komunitě 1 druh (nulová nejistota). <span class="citation"></span></li>
+  <li>Roste s bohatostí I vyrovnaností, ale je citlivý i na vzácné druhy. <span class="citation"></span></li>
+</ul>
+
+<h3>6.2 Simpson index (D)</h3>
+<p>$$D = -\log\sum_{i=1}^{S} p_i^2$$ <span class="citation"></span><br>
+(v jednodušší podobě bez logaritmu: $D = \sum p_i^2$ = pravděpodobnost, že 2 náhodně vybraní jedinci budou stejného druhu) <span class="citation"></span></p>
+<ul>
+  <li>Citlivější na DOMINANTNÍ druhy (kvůli kvadrátu) než na vzácné → víc ovlivněn vyrovnaností (evenness) než bohatostí. <span class="citation"></span></li>
+</ul>
+
+<h3>6.3 Whittakerův beta-diversity index</h3>
+<p>$$\beta = \frac{\gamma}{\bar{\alpha}}$$ <span class="citation"></span><br>
+(regionální diverzita / průměrná alfa diverzita lokalit) <span class="citation"></span></p>
+
+<h3>6.4 Jaccardův index podobnosti (species turnover)</h3>
+<p>$$\beta_{Jaccard} = \frac{\text{počet sdílených druhů}}{\text{suma všech druhů (sjednocení)}}$$ <span class="citation"></span></p>
+<ul>
+  <li>Vyšší hodnota = vyšší podobnost = NIŽŠÍ beta diverzita. <span class="citation"></span></li>
+  <li>Nerozlišuje "nestedness" (vnořenost) – jen celkové překrytí. <span class="citation"></span></li>
+</ul>
+
+<h3>6.5 Simpsonův index podobnosti (nestedness)</h3>
+<p>$$\beta_{Simpson} = \frac{\text{počet sdílených druhů}}{\text{sdílené druhy} + \min(\text{unikátní druhy každé lokality})}$$ <span class="citation"></span></p>
+<ul>
+  <li><strong>PROČ TO TAK JE:</strong> Použitím MINIMA z unikátních druhů (ne sumy obou) měříme, zda je menší (chudší) lokalita kompletně "vnořená" do bohatší – tedy zda jde o nestedness, ne pouhý species turnover. Vyšší hodnota = větší míra vnoření chudší komunity do bohatší. <span class="citation"></span></li>
+</ul>
+
+<blockquote>
+  Turnover, nestedness a rozdíl v bohatosti = tři navzájem provázané, ale koncepčně odlišné složky beta-diverzity. <span class="citation"></span>
+</blockquote>
+
+<hr>
+
+<h2>7. SPECIATION/EXTINCTION DYNAMIKA A ROVNOVÁŽNÉ MODELY DIVERZITY</h2>
+
+<h3>7.1 Theory of Island Biogeography (ETIB) – princip</h3>
+<ul>
+  <li>Kolonizační rychlost klesá s počtem druhů (čím víc druhů na ostrově, tím méně jich zbývá na pevnině jako zdroj) a roste s blízkostí pevniny. <span class="citation"></span></li>
+  <li>Extinkční rychlost roste s počtem druhů na ostrově a klesá s velikostí ostrova. <span class="citation"></span></li>
+  <li>Rovnováha = průsečík kolonizační a extinkční křivky (stejná logika jako Levinsova metapopulační rovnice, ale na úrovni DRUHŮ, ne populací). <span class="citation"></span></li>
+  <li><strong>Klíčový bod ke zkoušce:</strong> rovnováha vznikne, i kdyby byla hustotně závislá JEN jedna z těchto dvou křivek (ne nutně obě). <span class="citation"></span></li>
+</ul>
+
+<h3>7.2 Equilibrium Theory of Biodiversity Dynamics (ETBD)</h3>
+<p>Předpoklad: origination rate konstantní, extinction rate klesá s velikostí populace. <span class="citation"></span></p>
+<p>$$\hat N = \frac{J}{S}$$ <span class="citation"></span></p>
+<ul>
+  <li>$\hat N$ = rovnovážná průměrná abundance na druh <span class="citation"></span></li>
+  <li>J = celková abundance komunity (community abundance) <span class="citation"></span></li>
+  <li>S = species richness <span class="citation"></span></li>
+</ul>
+<ul>
+  <li><strong>PROČ TO TAK JE:</strong> Pokud je celkový "prostor" v komunitě (J = celkový počet jedinců, daný zdroji) zhruba fixní, pak s přibývajícími druhy S musí průměrná abundance na druh $\hat N$ klesat nepřímo úměrně – odtud J/S. <span class="citation"></span></li>
+  <li>$J_{max}$ = maximální dosažitelný počet jedinců (daný dostupnou energií/metabolickou rychlostí) – funkce J(S) je SUBlineární (sytí se), zatímco $\hat N = J/S$ je přímka → průsečík určuje rovnovážné S. <span class="citation"></span></li>
+</ul>
+
+<h3>7.3 Neutrální teorie (Hubbell) – klíčové matematické důsledky</h3>
+<ul>
+  <li>Pravděpodobnost, že druh nahradí jiný, roste s tím, jak je již běžný → <strong>pozitivní zpětná vazba</strong> (rich get richer) → "community drift" vede bez migrace k dominanci jednoho druhu. <span class="citation"></span></li>
+  <li>Vzniká: agregovaná distribuce druhů, SAD, trifázový SAR – to vše JEN z náhodných procesů (drift), bez jakékoli niky. <span class="citation"></span></li>
+  <li><strong>Klíčový bod:</strong> matematicky je to model náhodné procházky (random walk) v prostoru abundancí druhů. <span class="citation"></span></li>
+</ul>
+
+<hr>
+
+<h2>8. CHAOS A DISKRÉTNÍ (DIFERENČNÍ) MODELY</h2>
+
+<h3>8.1 Obecná diferenční rovnice (nepřekrývající se generace)</h3>
+<p>$$N_t = f(N_{t-1}, N_{t-2}, \dots)$$ <span class="citation"></span></p>
+<ul>
+  <li>Na rozdíl od <strong>diferenciálních</strong> rovnic (spojitý čas, $dN/dt$) jde o <strong>diferenční</strong> rovnice (diskrétní čas, kroky). <span class="citation"></span></li>
+</ul>
+
+<h3>8.2 Mayova rovnice (logistická mapa)</h3>
+<p>$$N_{t+1} = R N_t (1-N_t)$$ <span class="citation"></span></p>
+<ul>
+  <li><strong>Klíčový koncept:</strong> s rostoucím R dochází k bifurkacím:
+    <ul>
+      <li>nízké R → stabilní rovnováha</li>
+      <li>střední R → tlumené oscilace, pak stabilní cykly</li>
+      <li>vysoké R → <strong>deterministický chaos</strong></li>
+    </ul>
+    <span class="citation"></span>
+  </li>
+  <li><strong>"Deterministický chaos"</strong> = žádná náhodnost v modelu, ale výsledek je nepredikovatelný kvůli extrémní citlivosti na počáteční podmínky (musíme znát N₀ s nekonečnou přesností). <span class="citation"></span></li>
+</ul>
+
+<div class="section">
+  <div class="section-title">INTERAKTIVNÍ GRAF: Mayova rovnice – diskrétní populace a deterministic chaos <span class="citation"></span></div>
+  <div class="section-eq">N_{t+1} = R·Nₜ·(1 – Nₜ) <span class="citation"></span></div>
+
+  <div class="controls">
+    <div class="ctrl-group">R (growth rate):
+      <input type="range" id="mr" min="0.5" max="4" step="0.01" value="2.5">
+      <span class="val" id="mrv">2.50</span>
+    </div>
+    <div class="ctrl-group">N₀:
+      <input type="range" id="mn0" min="0.01" max="0.99" step="0.01" value="0.1">
+      <span class="val" id="mn0v">0.10</span>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Nₜ v čase <span class="citation"></span></div>
+      <div class="chart-wrap" style="height:170px"><canvas id="mayT" role="img" aria-label="Mayova rovnice v čase"></canvas></div>
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Bifurkační diagram (dlouhodobé chování vs. R) <span class="citation"></span></div>
+      <div class="chart-wrap" style="height:170px"><canvas id="mayBif" role="img" aria-label="Bifurkacni diagram"></canvas></div>
+    </div>
+  </div>
+  <div class="note" id="mayNote"></div>
+</div>
+
+<script>
+let mayTChart, mayBifChart;
+function buildMay() {
+  const R = +document.getElementById('mr').value;
+  const N0 = +document.getElementById('mn0').value;
+  document.getElementById('mrv').textContent = R.toFixed(2);
+  document.getElementById('mn0v').textContent = N0.toFixed(2);
+
+  const steps = 120;
+  const Ns = [N0];
+  for (let t = 0; t < steps; t++) {
+    const last = Ns[Ns.length - 1];
+    Ns.push(Math.max(0, Math.min(1, R * last * (1 - last))));
+  }
+
+  const regime = R < 1 ? 'vymírání (N→0)' : R < 3 ? 'stabilní rovnováha' : R < 3.449 ? 'tlumené oscilace' : R < 3.57 ? 'stabilní cykly' : 'deterministický CHAOS';
+
+  if (mayTChart) mayTChart.destroy();
+  mayTChart = new Chart(document.getElementById('mayT'), {
+    type: 'line',
+    data: { labels: Array.from({length: steps+1}, (_,i) => i), datasets: [{
+      label: 'N', data: Ns.map(v => +v.toFixed(4)),
+      borderColor: '#7F77DD', borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: '#7F77DD'
+    }]},
+    options: { ...baseOpts('generace t', 'Nₜ'), scales: { y: { ...baseOpts('','').scales.y, min: 0, max: 1 } }, plugins: { legend: { display: false } } }
+  });
+
+  const Rvals = [], bifPts = [];
+  for (let Rb = 0.5; Rb <= 4; Rb += 0.01) {
+    let n = 0.5;
+    for (let t = 0; t < 300; t++) n = Rb * n * (1 - n);
+    const pts = new Set();
+    for (let t = 0; t < 100; t++) {
+      n = Rb * n * (1 - n);
+      pts.add(Math.round(n * 1000) / 1000);
+    }
+    pts.forEach(v => bifPts.push({ x: +Rb.toFixed(2), y: v }));
+  }
+
+  if (mayBifChart) mayBifChart.destroy();
+  mayBifChart = new Chart(document.getElementById('mayBif'), {
+    type: 'scatter',
+    data: { datasets: [{
+      label: 'N∞', data: bifPts,
+      pointRadius: 0.6, pointBackgroundColor: '#7F77DD88', borderWidth: 0
+    }, {
+      label: 'aktuální R', data: [{ x: R, y: 0 }, { x: R, y: 1 }],
+      type: 'line', borderColor: '#D85A30', borderWidth: 1.5, borderDash: [4,3], pointRadius: 0
+    }]},
+    options: { ...baseOpts('R', 'N (dlouhodobé)'), parsing: false,
+      scales: { x: { ...baseOpts('','').scales.x, min: 0.5, max: 4 }, y: { ...baseOpts('','').scales.y, min: 0, max: 1 } },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  document.getElementById('mayNote').textContent = `R = ${R.toFixed(2)} → ${regime}. Červená svislá čára v bifurkačním diagramu = vaše R. Přetahujte posuvník přes R = 3 (první bifurkace), 3.449 (druhá), 3.57 (hranice chaosu). Deterministický chaos: stejná rovnice, jiné N₀ → zcela odlišné trajektorie.`;
+}
+['mr','mn0'].forEach(id => document.getElementById(id).addEventListener('input', buildMay));
+buildMay();
+</script>
+
+
+<h3>8.3 Rozšířená verze s parametrem síly hustotní závislosti</h3>
+<p>$$N_{t+1} = \frac{N_t R}{1+(aN_t)^b}$$ <span class="citation"></span></p>
+<ul>
+  <li>Dva parametry: R (růstová rychlost) a b (síla/tvar hustotní závislosti) <span class="citation"></span></li>
+  <li>Kombinace R a b určuje, zda dostaneme: monotónní tlumení → tlumené oscilace → stabilní limitní cykly → chaos. <span class="citation"></span></li>
+</ul>
+
+<hr>
+
+<h2>9. MATICOVÉ MODELY POPULACÍ (věková/stádiová struktura)</h2>
+
+<h3>9.1 Leslieho matice (transition matrix)</h3>
+<p>$$\begin{pmatrix} n_0 \\ n_1 \\ n_2 \\ \vdots \\ n_{\nu-1}\end{pmatrix}_{t+1} = \begin{pmatrix} f_0 & f_1 & f_2 & \dots & f_{\nu-1} \\ s_0 & 0 & 0 & \dots & 0 \\ 0 & s_1 & 0 & \dots & 0 \\ \vdots & & & \ddots & \vdots \\ 0 & 0 & \dots & s_{\nu-2} & 0\end{pmatrix} \begin{pmatrix} n_0 \\ n_1 \\ n_2 \\ \vdots \\ n_{\nu-1}\end{pmatrix}_t$$ <span class="citation"></span></p>
+<ul>
+  <li>První řádek (f) = fertility/reprodukce (přechod do nejnižší třídy) <span class="citation"></span></li>
+  <li>Subdiagonála (s) = survival/přežívání (přechod do vyšší věkové třídy) <span class="citation"></span></li>
+</ul>
+
+<h3>9.2 Klíčové matematické věty (jen koncepčně, NE důkazy)</h3>
+<ul>
+  <li><strong>Lotka (1939):</strong> Při konstantních přechodových pravděpodobnostech populace KONVERGUJE ke stabilní věkové struktuře bez ohledu na počáteční strukturu → tato stabilní struktura = <strong>dominantní eigenvektor</strong> (vlastní vektor) projekční matice. <span class="citation"></span></li>
+  <li><strong>Euler (1760):</strong> Populační růstová rychlost = <strong>dominantní eigenvalue</strong> (vlastní číslo) matice. <span class="citation"></span>
+    <ul>
+      <li>Eigenvalue = "kolikrát se vektor přeškáluje" při násobení maticí (analogie: pokud je matice "2x větší", eigenvalue=2).</li>
+    </ul>
+  </li>
+  <li><strong>Realita:</strong> Tyto věty platí jen za konstantních pravděpodobností přechodu – v realitě jsou hustotně závislé, takže výsledky jsou idealizací. <span class="citation"></span></li>
+</ul>
+
+<h3>9.3 Sensitivity a elasticity analýza</h3>
+<ul>
+  <li><strong>Sensitivity analysis</strong> = jak se citlivost výstupu modelu (růstové rychlosti) mění s nejistotou/změnou jednotlivých vstupních parametrů matice. <span class="citation"></span></li>
+  <li><strong>Elasticity analysis</strong> = PROPORCIONÁLNÍ změna růstové rychlosti vzhledem k proporcionální změně vital rate (citlivost v relativních, ne absolutních jednotkách). <span class="citation"></span></li>
+  <li><strong>Praktický důsledek (klíčový pro zkoušku):</strong> u dlouhověkých druhů je populační růst citlivější (vyšší elasticita) na DOSPĚLÉ přežívání, u krátkověkých druhů na FEKUNDITU. <span class="citation"></span></li>
+</ul>
+
+<hr>
+
+<h2>10. PREDÁTOR-KOŘIST MODELY (Lotka-Volterra a rozšíření)</h2>
+
+<h3>10.1 Základní Lotka-Volterra model</h3>
+<p>$$\frac{dR}{dt} = rR - aNR \qquad \text{(kořist)}$$ <span class="citation"></span><br>
+$$\frac{dN}{dt} = faRN - qN \qquad \text{(predátor)}$$ <span class="citation"></span></p>
+
+<table>
+  <tr><th>Symbol</th><th>Význam</th></tr>
+  <tr><td>R</td><td>velikost populace kořisti</td></tr>
+  <tr><td>N</td><td>velikost populace predátora</td></tr>
+  <tr><td>r</td><td>růstová konstanta kořisti (bez predace)</td></tr>
+  <tr><td>a</td><td>efektivita predátora (úspěšnost lovu)</td></tr>
+  <tr><td>f</td><td>konverzní konstanta (kolik biomasy kořisti → potomstvo predátora)</td></tr>
+  <tr><td>q</td><td>mortalita predátora (nezávislá na kořisti)</td></tr>
+</table>
+<p><span class="citation"></span></p>
+
+<p><strong>Nulové izokliny:</strong> <span class="citation"></span></p>
+<ul>
+  <li>Kořist: $0 = rR - aNR \Rightarrow N = r/a$ (VERTIKÁLNÍ čára v prostoru R-N, nezávislá na R!) <span class="citation"></span></li>
+  <li>Predátor: $0 = faRN - qN \Rightarrow R = q/(fa)$ (HORIZONTÁLNÍ čára, nezávislá na N!) <span class="citation"></span></li>
+</ul>
+<ul>
+  <li><strong>PROČ TO TAK JE:</strong> Mortalita kořisti je ZCELA daná predací (žádná hustotní závislost kořisti samotné) a natalita predátora je ZCELA daná dostupností kořisti → odtud tyto "extrémní" (konstantní) izokliny. <span class="citation"></span></li>
+  <li><strong>Výsledek:</strong> Neutrální (nikdy netlumené) cykly se čtvrtinovým fázovým posunem – amplituda cyklu je dána POUZE počátečními podmínkami (náhodná), systém se nevrací k jedné rovnováze, ale cykluje stále kolem ní. <span class="citation"></span></li>
+</ul>
+
+<h3>10.2 Model "zdroj s konstantním přítokem" (bez zpětné vazby r)</h3>
+<p>$$\frac{dR}{dt} = P - aNR \qquad \frac{dN}{dt} = faRN - qN$$ <span class="citation"></span></p>
+<ul>
+  <li>P = konstantní produkce zdroje (např. hnojení fosforem) <span class="citation"></span></li>
+  <li>Izoklina kořisti: $N = P/(aR)$ → HYPERBOLA (ne přímka!) <span class="citation"></span></li>
+  <li>Výsledek: mírně TLUMENÉ oscilace (spirála ke stabilní rovnováze), ne neutrální cykly. <span class="citation"></span></li>
+  <li>Carrying capacity: $N = \dfrac{P}{aR} = \dfrac{Pfa}{aq} = \dfrac{Pf}{q}$ <span class="citation"></span></li>
+</ul>
+
+<h3>10.3 Volterrův model s nosnou kapacitou kořisti</h3>
+<p>$$\frac{dR}{dt} = rR\left(1-\frac{R}{K}\right) - aNR$$ <span class="citation"></span></p>
+<ul>
+  <li>Přidání logistického omezení kořisti → izoklina kořisti je DIAGONÁLNÍ (ne vertikální). <span class="citation"></span></li>
+  <li>Výsledek: TLUMENÉ oscilace → spirála k JEDNÉ stabilní rovnováze (na rozdíl od neutrálních cyklů základního modelu). <span class="citation"></span></li>
+</ul>
+
+<div class="section">
+  <div class="section-title">INTERAKTIVNÍ GRAF: Lotka-Volterra – predátor-kořist <span class="citation"></span></div>
+  <div class="section-eq">dR/dt = rR – aNR &nbsp;|&nbsp; dN/dt = faRN – qN <span class="citation"></span></div>
 
   <div class="controls">
     <div class="ctrl-group">r (růst kořisti):
@@ -470,11 +1250,11 @@ buildSAR();
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
     <div>
-      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">R(t) a N(t) – dynamika v čase</div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">R(t) a N(t) – dynamika v čase <span class="citation"></span></div>
       <div class="chart-wrap" style="height:180px"><canvas id="lvTime" role="img" aria-label="Lotka-Volterra dinamika v čase"></canvas></div>
     </div>
     <div>
-      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Fázový prostor R–N (trajektorie)</div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Fázový prostor R–N (trajektorie) <span class="citation"></span></div>
       <div class="chart-wrap" style="height:180px"><canvas id="lvPhase" role="img" aria-label="Fázový prostor Lotka-Volterra"></canvas></div>
     </div>
   </div>
@@ -547,250 +1327,59 @@ function buildLV() {
 buildLV();
 </script>
 
-<!-- ══════════════════════════════════════════════════════════ -->
-<!-- 6. MAYOVA ROVNICE – chaos -->
-<!-- ══════════════════════════════════════════════════════════ -->
-<div class="section">
-  <div class="section-title">6. Mayova rovnice – diskrétní populace a deterministic chaos</div>
-  <div class="section-eq">N_{t+1} = R·Nₜ·(1 – Nₜ)</div>
+<h3>10.4 Rosenzweig-MacArthur model (funkční odpověď typu II)</h3>
+<p>$$\frac{dR}{dt} = rR\left(1-\frac{R}{K}\right) - \frac{cNR}{d+R}$$ <span class="citation"></span><br>
+$$\frac{dN}{dt} = f\frac{cNR}{d+R} - qN$$ <span class="citation"></span></p>
+<ul>
+  <li>Člen $\dfrac{cNR}{d+R}$ = <strong>funkční odpověď typu II</strong> (Holling) – sytí se při vysoké hustotě kořisti (handling time). <span class="citation"></span></li>
+  <li><strong>Paradox of enrichment:</strong> Zvýšení K (víc zdrojů pro kořist) DESTABILIZUJE systém → větší amplitudy cyklů, případně chaos. Kontraintuitivní, ale matematicky robustní výsledek. <span class="citation"></span></li>
+</ul>
 
-  <div class="controls">
-    <div class="ctrl-group">R (growth rate):
-      <input type="range" id="mr" min="0.5" max="4" step="0.01" value="2.5">
-      <span class="val" id="mrv">2.50</span>
-    </div>
-    <div class="ctrl-group">N₀:
-      <input type="range" id="mn0" min="0.01" max="0.99" step="0.01" value="0.1">
-      <span class="val" id="mn0v">0.10</span>
-    </div>
-  </div>
+<h3>10.5 Řešení paradoxu obohacení</h3>
+<p><strong>a) Ratio-dependent model (Ginsburg, 1989):</strong> <span class="citation"></span></p>
+<ul>
+  <li>Killing rate závisí na poměru R/N (ne jen na R) → izoklina predátora je DIAGONÁLNÍ místo horizontální. <span class="citation"></span></li>
+</ul>
+<p><strong>b) Predator interference (kompetice mezi predátory)</strong> <span class="citation"></span></p>
+<ul>
+  <li>Stejný kvalitativní efekt – stabilizuje systém přidáním vnitrodruhové kompetice mezi predátory. <span class="citation"></span></li>
+</ul>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-    <div>
-      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Nₜ v čase</div>
-      <div class="chart-wrap" style="height:170px"><canvas id="mayT" role="img" aria-label="Mayova rovnice v čase"></canvas></div>
-    </div>
-    <div>
-      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Bifurkační diagram (dlouhodobé chování vs. R)</div>
-      <div class="chart-wrap" style="height:170px"><canvas id="mayBif" role="img" aria-label="Bifurkacni diagram"></canvas></div>
-    </div>
-  </div>
-  <div class="note" id="mayNote"></div>
-</div>
+<h3>10.6 Funkční odpovědi (Hollingovy typy) – tvar</h3>
+<table>
+  <tr><th>Typ</th><th>Tvar</th><th>Biologický význam</th></tr>
+  <tr><td>I</td><td>lineární</td><td>konzumace roste přímo úměrně s hustotou kořisti (bez sytícího efektu)</td></tr>
+  <tr><td>II</td><td>sytící se křivka (konkávní)</td><td>omezeno handling time – typické pro specialisty</td></tr>
+  <tr><td>III</td><td>sigmoidální (S-křivka)</td><td>při nízké hustotě kořisti predátor neloví (není to "vyplatné") – typické pro generalisty, vede k DOLNÍMU prahu stability</td></tr>
+</table>
+<p><span class="citation"></span></p>
 
-<script>
-let mayTChart, mayBifChart;
-function buildMay() {
-  const R = +document.getElementById('mr').value;
-  const N0 = +document.getElementById('mn0').value;
-  document.getElementById('mrv').textContent = R.toFixed(2);
-  document.getElementById('mn0v').textContent = N0.toFixed(2);
+<ul>
+  <li>Typ III → horizontální zero-growth izoklina predátora při nízkých hustotách → může vytvořit <strong>stabilní rovnováhu</strong> (na rozdíl od typu II). <span class="citation"></span></li>
+  <li>Při vyšší kapacitě predátora mohou vzniknout <strong>VÍCENÁSOBNÉ rovnováhy</strong> (alternativní stabilní stavy) – některé stabilní, některé nestabilní (= prahy/tipping points). <span class="citation"></span></li>
+</ul>
 
-  const steps = 120;
-  const Ns = [N0];
-  for (let t = 0; t < steps; t++) {
-    const last = Ns[Ns.length - 1];
-    Ns.push(Math.max(0, Math.min(1, R * last * (1 - last))));
-  }
+<h3>10.7 Subproporcionální nárůst biomasy (trofické pyramidy)</h3>
+<p>Empirický mocninný vztah:<br>
+$$\text{predator biomass} = a \times (\text{prey biomass})^b, \quad b < 1$$ <span class="citation"></span><br>
+(z přednášky: $y = 0{,}094 x^{0{,}73}$) <span class="citation"></span></p>
+<ul>
+  <li><strong>PROČ TO TAK JE:</strong> Exponent < 1 znamená, že s rostoucí biomasou kořisti roste biomasa predátorů POMALEJI než proporcionálně – v chudých prostředích je relativní podíl predátorů VYŠŠÍ než v bohatých → klasická trofická pyramida s konstantním poměrem neplatí. <span class="citation"></span></li>
+</ul>
 
-  const regime = R < 1 ? 'vymírání (N→0)' : R < 3 ? 'stabilní rovnováha' : R < 3.449 ? 'tlumené oscilace' : R < 3.57 ? 'stabilní cykly' : 'deterministický CHAOS';
+<hr>
 
-  if (mayTChart) mayTChart.destroy();
-  mayTChart = new Chart(document.getElementById('mayT'), {
-    type: 'line',
-    data: { labels: Array.from({length: steps+1}, (_,i) => i), datasets: [{
-      label: 'N', data: Ns.map(v => +v.toFixed(4)),
-      borderColor: '#7F77DD', borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: '#7F77DD'
-    }]},
-    options: { ...baseOpts('generace t', 'Nₜ'), scales: { y: { ...baseOpts('','').scales.y, min: 0, max: 1 } }, plugins: { legend: { display: false } } }
-  });
+<h2>RYCHLÝ SOUHRN – CO SI ZAPAMATOVAT JAKO "KOSTRU"</h2>
+<ol>
+  <li><strong>Power law / log-log linearita</strong> je univerzální vzorec napříč CELOU makroekologií i SAR (<code>Y = aX^k</code> ⟺ <code>log Y = k log X + log a</code>). Pokud si nejste jistí konkrétním vzorcem, zkuste si nejdřív vzpomenout, jestli to je jen tahle obecná forma. <span class="citation"></span></li>
+  <li><strong>Hustotní závislost</strong> = klíčový princip, který řeší všechny "paradoxy" jednoduchých modelů (logistická rovnice, Levinsova metapopulační rovnice, ETBD) – všude, kde model selže, hledejte, jestli chybí závislost rychlosti na velikosti/hustotě. <span class="citation"></span></li>
+  <li><strong>Maximalizace fitness = derivace a hledání nuly</strong> – všechny optimalizační modely (Lack, Smith-Fretwell, Fisherian optimality) používají STEJNÝ postup: napsat R₀ nebo r jako funkci volného parametru, zderivovat, položit rovno nule. <span class="citation"></span></li>
+  <li><strong>Lotka-Volterra rodina modelů</strong> – naučte se, jak přidání jednotlivých biologických realit (K kořisti, sytící se predace, ratio-dependence) postupně MĚNÍ tvar izoklin (vertikální/horizontální → diagonální/hyperbolická) a tím STABILIZUJE nebo DESTABILIZUJE systém. Tohle je nejčastější typ "aplikační" otázky. <span class="citation"></span></li>
+  <li><strong>Eigenvalue/eigenvektor</strong> u maticových modelů – stačí chápat WHAT they represent (růstová rychlost / stabilní věková struktura), ne umět je počítat ručně. <span class="citation"></span></li>
+</ol>
 
-  const Rvals = [], bifPts = [];
-  for (let Rb = 0.5; Rb <= 4; Rb += 0.01) {
-    let n = 0.5;
-    for (let t = 0; t < 300; t++) n = Rb * n * (1 - n);
-    const pts = new Set();
-    for (let t = 0; t < 100; t++) {
-      n = Rb * n * (1 - n);
-      pts.add(Math.round(n * 1000) / 1000);
-    }
-    pts.forEach(v => bifPts.push({ x: +Rb.toFixed(2), y: v }));
-  }
+<hr>
+<p><em>Tip k učení: U každé kapitoly zkuste nejdřív zakrýt vzorec a sami si zkusit odvodit, "co by tam logicky muselo být" na základě sloupce "PROČ TO TAK JE" – to je přesně typ porozumění, který se na zkoušce z pokročilé ekologie testuje nejvíc. <span class="citation"></span></em></p>
 
-  if (mayBifChart) mayBifChart.destroy();
-  mayBifChart = new Chart(document.getElementById('mayBif'), {
-    type: 'scatter',
-    data: { datasets: [{
-      label: 'N∞', data: bifPts,
-      pointRadius: 0.6, pointBackgroundColor: '#7F77DD88', borderWidth: 0
-    }, {
-      label: 'aktuální R', data: [{ x: R, y: 0 }, { x: R, y: 1 }],
-      type: 'line', borderColor: '#D85A30', borderWidth: 1.5, borderDash: [4,3], pointRadius: 0
-    }]},
-    options: { ...baseOpts('R', 'N (dlouhodobé)'), parsing: false,
-      scales: { x: { ...baseOpts('','').scales.x, min: 0.5, max: 4 }, y: { ...baseOpts('','').scales.y, min: 0, max: 1 } },
-      plugins: { legend: { display: false } }
-    }
-  });
-
-  document.getElementById('mayNote').textContent = `R = ${R.toFixed(2)} → ${regime}. Červená svislá čára v bifurkačním diagramu = vaše R. Přetahujte posuvník přes R = 3 (první bifurkace), 3.449 (druhá), 3.57 (hranice chaosu). Deterministický chaos: stejná rovnice, jiné N₀ → zcela odlišné trajektorie.`;
-}
-['mr','mn0'].forEach(id => document.getElementById(id).addEventListener('input', buildMay));
-buildMay();
-</script>
-
-<!-- ══════════════════════════════════════════════════════════ -->
-<!-- 7. BODY SIZE – škálování s metabolismem -->
-<!-- ══════════════════════════════════════════════════════════ -->
-<div class="section">
-  <div class="section-title">7. Metabolismus a tělesná velikost – škálovací zákon</div>
-  <div class="section-eq">P = P₀ · M^(3/4) &nbsp;|&nbsp; B (per-unit mass) = B₀ · M^(–1/4)</div>
-
-  <div class="controls">
-    <div class="ctrl-group">Exponent k:
-      <input type="range" id="bsk" min="0.5" max="1.2" step="0.01" value="0.75">
-      <span class="val" id="bskv">0.75</span>
-    </div>
-    <div class="ctrl-group">P₀:
-      <input type="range" id="bsp0" min="0.1" max="5" step="0.1" value="1">
-      <span class="val" id="bsp0v">1.0</span>
-    </div>
-  </div>
-
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-    <div>
-      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">P vs. M (aritmetická škála)</div>
-      <div class="chart-wrap" style="height:170px"><canvas id="bsLin" role="img" aria-label="Metabolismus vs hmotnost linerni"></canvas></div>
-    </div>
-    <div>
-      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">log P vs. log M → sklon k (srovnej ¾ vs. 1)</div>
-      <div class="chart-wrap" style="height:170px"><canvas id="bsLog" role="img" aria-label="Metabolismus vs hmotnost log-log"></canvas></div>
-    </div>
-  </div>
-  <div class="note">Kleiberův zákon: k = 3/4. Pokud vydělíte metabolismus hmotností: B = P/M = P₀·M^(k–1). Pro k = 3/4: B ∝ M^(–1/4) → menší organismus má VYŠŠÍ specifický metabolismus. Energy Equivalence Rule (Damuth): hustota × individuální metabolismus = konstanta (nezávislé na tělesné velikosti).</div>
-</div>
-
-<script>
-let bsLinChart, bsLogChart;
-function buildBS() {
-  const k = +document.getElementById('bsk').value;
-  const P0 = +document.getElementById('bsp0').value;
-  document.getElementById('bskv').textContent = k.toFixed(2);
-  document.getElementById('bsp0v').textContent = P0.toFixed(1);
-
-  const Ms = range(0.001, 10000, 100);
-  const Ps = Ms.map(m => +(P0 * Math.pow(m, k)).toFixed(4));
-  const Ps75 = Ms.map(m => +(P0 * Math.pow(m, 0.75)).toFixed(4));
-  const Ps1 = Ms.map(m => +(P0 * Math.pow(m, 1)).toFixed(4));
-
-  const logMs = Ms.map(m => +(Math.log10(m)).toFixed(3));
-  const logPs = Ps.map(p => +(Math.log10(p)).toFixed(3));
-  const logPs75 = Ps75.map(p => +(Math.log10(p)).toFixed(3));
-  const logPs1 = Ps1.map(p => +(Math.log10(p)).toFixed(3));
-
-  if (bsLinChart) bsLinChart.destroy();
-  if (bsLogChart) bsLogChart.destroy();
-
-  bsLinChart = new Chart(document.getElementById('bsLin'), {
-    type: 'line',
-    data: { labels: Ms.map(m => m > 999 ? (m/1000).toFixed(0)+'k' : m.toFixed(1)), datasets: [
-      { label: 'vaše k', data: Ps, borderColor: '#378ADD', borderWidth: 2, pointRadius: 0 },
-      { label: 'k=0.75', data: Ps75, borderColor: '#1D9E75', borderWidth: 1.5, borderDash: [5,4], pointRadius: 0 },
-      { label: 'k=1', data: Ps1, borderColor: '#888', borderWidth: 1, borderDash: [3,3], pointRadius: 0 }
-    ]},
-    options: { ...baseOpts('M (hmotnost)', 'P (metabolismus)'), plugins: { legend: { display: false } } }
-  });
-
-  bsLogChart = new Chart(document.getElementById('bsLog'), {
-    type: 'line',
-    data: { datasets: [
-      { label: 'vaše k', data: logMs.map((x,i) => ({ x, y: logPs[i] })), borderColor: '#378ADD', borderWidth: 2, pointRadius: 0 },
-      { label: 'k=0.75', data: logMs.map((x,i) => ({ x, y: logPs75[i] })), borderColor: '#1D9E75', borderWidth: 1.5, borderDash: [5,4], pointRadius: 0 },
-      { label: 'k=1', data: logMs.map((x,i) => ({ x, y: logPs1[i] })), borderColor: '#888', borderWidth: 1, borderDash: [3,3], pointRadius: 0 }
-    ]},
-    options: { ...baseOpts('log M', 'log P'), parsing: false, plugins: { legend: { display: false } } }
-  });
-}
-['bsk','bsp0'].forEach(id => document.getElementById(id).addEventListener('input', buildBS));
-buildBS();
-</script>
-
-<!-- ══════════════════════════════════════════════════════════ -->
-<!-- 8. FISHER / OPTIMÁLNÍ VĚK DOSPĚLOSTI -->
-<!-- ══════════════════════════════════════════════════════════ -->
-<div class="section">
-  <div class="section-title">8. Fisheriánský model – optimální věk dospělosti (semelparní)</div>
-  <div class="section-eq">R₀ = e^(–c₁t) · c₂ · t^c₃ &nbsp;→ maximalizuj R₀ přes t</div>
-
-  <div class="controls">
-    <div class="ctrl-group">c₁ (mortalita):
-      <input type="range" id="fc1" min="0.01" max="0.5" step="0.01" value="0.1">
-      <span class="val" id="fc1v">0.10</span>
-    </div>
-    <div class="ctrl-group">c₂ (fek. koef.):
-      <input type="range" id="fc2" min="0.1" max="5" step="0.1" value="1">
-      <span class="val" id="fc2v">1.0</span>
-    </div>
-    <div class="ctrl-group">c₃ (fek. exp.):
-      <input type="range" id="fc3" min="0.5" max="4" step="0.1" value="2">
-      <span class="val" id="fc3v">2.0</span>
-    </div>
-  </div>
-
-  <div class="chart-wrap" style="height:200px">
-    <canvas id="fishChart" role="img" aria-label="Fisheriánský model optimálního věku dospělosti"></canvas>
-  </div>
-  <div class="note" id="fishNote"></div>
-</div>
-
-<script>
-let fishChart;
-function buildFish() {
-  const c1 = +document.getElementById('fc1').value;
-  const c2 = +document.getElementById('fc2').value;
-  const c3 = +document.getElementById('fc3').value;
-  document.getElementById('fc1v').textContent = c1.toFixed(2);
-  document.getElementById('fc2v').textContent = c2.toFixed(1);
-  document.getElementById('fc3v').textContent = c3.toFixed(1);
-
-  const tOpt = c3 / c1;
-  const ts = range(0.1, Math.min(tOpt * 3.5, 80), 200);
-  const R0 = ts.map(t => +(Math.exp(-c1 * t) * c2 * Math.pow(t, c3)).toFixed(5));
-  const R0max = Math.max(...R0);
-  const r_vals = ts.map(t => +(Math.log(Math.exp(-c1*t)*c2*Math.pow(t,c3))/t).toFixed(5));
-
-  if (fishChart) fishChart.destroy();
-  fishChart = new Chart(document.getElementById('fishChart'), {
-    type: 'line',
-    data: { labels: ts.map(v => v.toFixed(1)), datasets: [
-      { label: 'R₀(t)', data: R0, borderColor: '#378ADD', borderWidth: 2, pointRadius: 0,
-        yAxisID: 'y' },
-      { label: 'r(t)', data: r_vals, borderColor: '#D85A30', borderWidth: 1.5, borderDash: [5,4], pointRadius: 0,
-        yAxisID: 'y2' },
-      { label: 'optimum t*', data: ts.map(() => null).map((_, i) => ts[i] >= tOpt - 0.5 && ts[i] <= tOpt + 0.5 ? R0max : null),
-        borderColor: '#1D9E75', borderWidth: 1, borderDash: [3,3], pointRadius: 0, yAxisID: 'y' }
-    ]},
-    options: {
-      responsive: true, maintainAspectRatio: false, animation: false,
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(3)}` } } },
-      scales: {
-        x: { grid: { color: GRID }, ticks: { color: TICK, font: { size: 10 }, maxTicksLimit: 10 },
-             title: { display: true, text: 'věk dospělosti t', color: TICK, font: { size: 11 } } },
-        y: { grid: { color: GRID }, ticks: { color: TICK, font: { size: 10 } },
-             title: { display: true, text: 'R₀', color: '#378ADD', font: { size: 11 } } },
-        y2: { position: 'right', grid: { display: false }, ticks: { color: '#D85A30', font: { size: 10 } },
-              title: { display: true, text: 'r', color: '#D85A30', font: { size: 11 } } }
-      }
-    }
-  });
-
-  document.getElementById('fishNote').textContent =
-    `Optimální věk dospělosti t* = c₃/c₁ = ${c3.toFixed(1)}/${c1.toFixed(2)} = ${tOpt.toFixed(1)}. Modrá = R₀(t), oranžová = r(t). Obě mají maximum v různém bodě! Maximum R₀ vs. maximum r dávají různá optima – závisí na tom, jaký fitness proxy zvolíte.`;
-}
-['fc1','fc2','fc3'].forEach(id => document.getElementById(id).addEventListener('input', buildFish));
-buildFish();
-</script>
-
-<div style="padding:1rem 0 0.5rem;font-size:11px;color:var(--color-text-secondary);">
-  ↗ Kliknutím na název rovnice v každé sekci získáte více detailů. Grafy jsou interaktivní – přetahujte posuvníky.
-</div>
+</body>
+</html>
